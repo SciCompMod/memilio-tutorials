@@ -23,5 +23,7 @@ This should open a new browser window with the notebook. Otherwise, look for and
 
 The notebook can *later* be closed through the jupyter browser tab `File > Shut Down`, or by pressing `Ctrl+C` in the terminal twice.
 
-To create a notebook using the C++ kernel, select the `Files` tab (within the jupyter browser tab), then select `New > C++ 20` on the right.
+You can try running the `hello-world.ipynb` notebook from the `Files` tab (within the jupyter browser tab).
+
+To create a notebook using the C++ kernel, select the `Files` tab, then select `New > C++ 20` on the right.
 This will create a new notebook. Existing notebooks can be directly opened from the `Files` tab and should automatically launch the correct kernel.
