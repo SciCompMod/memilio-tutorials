@@ -18,11 +18,11 @@ def _(mo):
     mo.md(r"""
     # Breaking news 📺
 
-    Today, the german federal health authority RKI announced that the recently observed sharp increase in ICU case numbers after acute respiratory infections is due to a new lineage of the influenza virus. It was first sequenced at the university hospital of cologne and thus called Influenza B/Colognia/314/2026. After it's detection, laboratories in the whole of Germany rushed to test stored samples of recent patients s.t. we now have a good overview on the death numbers and numbers of patients in ICUs.
+    Today, the German federal health authority RKI announced that the recently observed sharp increase in ICU case numbers after acute respiratory infections is due to a new lineage of the influenza virus. It was first sequenced at the University Hospital of Cologne and thus called Influenza B/Colognia/314/2026. After it's detection, laboratories in the whole of Germany rushed to test stored samples of recent patients so that we now have a good overview of the death counts and numbers of patients in ICUs.
 
-    The oldest sample found was a 80 year old man from Cologne, who died on 2026-02-28. His family reported that he felt sick shortly after excessively celebrating carneval on Rose Monday, which was 2026-02-16 this year.
+    The oldest sample found was from an 80-year-old man from Cologne, who died on 2026-02-28. His family reported that he felt sick shortly after excessively celebrating Karneval on Rose Monday, which was 2026-02-16 this year.
 
-    The RKI today published all available data and asked for modellers around the world to estimate paramaters and make predictions on the course of the disease.
+    The RKI today published all available data and asked modellers around the world to estimate parameters and make predictions on the course of the disease.
     """)
     return
 
@@ -32,13 +32,13 @@ def _(mo):
     mo.md(r"""
     # Introduction
 
-    In this tutorial we will try to infere model parameters based on "real" data. This will allow us to make predictions on the course of an epidemic and suggest appropriate interventions.
+    In this tutorial we will try to infer model parameters based on "real" data. This will allow us to make predictions about the course of an epidemic and suggest appropriate interventions.
 
     This is the first in a series of three notebooks that will introduce the usage of Approximate Bayesian computation with MEmilio. We will start with a simple model and progressively improve our fits by adding different age groups and multiple regions.
 
     This is not a tutorial on Approximate Bayesian Computation. For that, we refer to the tutorials of the software we use and the literature. We will just show how to use these tools together with the MEmilio software framework.
 
-    In the first two tutorials we will use the package [pyabc](https://pyabc.readthedocs.io/en/latest/). It is a package for likelihood-free inference. This is, of course, a bit of overkill for a differentiable ODE model. However, due to the extremely short runtime of the ODE models, they are very well fitted for a tutorial. If you want to use the same methods for our stochastic models, you only need to replace the model (and wait for a bit longer).
+    In the first two tutorials we will use the package [pyabc](https://pyabc.readthedocs.io/en/latest/). It is a package for likelihood-free inference. This is, of course, somewhat overkill for a differentiable ODE model. However, short runtimes of such ODE models make them well-suited for a tutorial. If you want to use the same methods for our stochastic models, you only need to replace the model (and wait for a bit longer).
     For the last tutorial we will use [Bayesflow](https://bayesflow.org/main/index.html), a state of the art python library for Bayesian inference with deep learning.
     """)
     return
@@ -65,7 +65,7 @@ def _():
 @app.cell
 def _(mo):
     mo.md(r"""
-    Next, we need a lot of parameters. We will first (i.e. in this notebook) try to fit a simple model without age groups or any spatial resolution. This, luckily, reduces our parameter space to just a few unknowns. The parameters that we already know are the total population of Germany, day 0 (rose monday is a good guess here) and thus the length of the simulation (the last reported day in the data). We should also choose an initial time step, but the ODE solver will use adaptive time steps later on. Previous studys give us good values for the contact rates in Germany that we will just reuse here.
+    Next, we need a lot of parameters. We will first (i.e. in this notebook) try to fit a simple model without age groups or any spatial resolution. This, luckily, reduces our parameter space to just a few unknowns. The parameters that we already know are the total population of Germany, day 0 (Rose Monday is a good guess here), and the length of the simulation (from day 0 to the last reported day in the data). We should also choose an initial time step, but the ODE solver will use adaptive time steps later on. Previous studies give us good values for the contact rates in Germany, which we will just reuse here.
     """)
     return
 
@@ -155,7 +155,7 @@ def _(
         local_model.parameters.ContactPatterns.cont_freq_mat[0].baseline = np.ones((1,1)) * contact_frequency
         # Check that the parameters can not be impossible choices like, for example, negative dwelling times
         local_model.apply_constraints()
-    
+
         result = osecir.simulate(t0, tmax, dt, local_model)
         return {"data": osecir.interpolate_simulation_result(result).as_ndarray()}
     return (run_simulation,)
@@ -174,7 +174,7 @@ def _(mo):
     mo.md(r"""
     # Fitting Setup
 
-    We decided to use [`pyabc`](https://pyabc.readthedocs.io/en/latest/) for the parameter estimation. It is a well-established tool and maintained by collegues of us, so we get good support😇. In combination with MEmilio, it has for example been used in [this publication](https://doi.org/10.1101/2025.09.25.25336633). We will just introduce its features as needed. For advanced setups, like distributed cluster usage, additional settings, visualizations and examples we refer to the [documentation](https://pyabc.readthedocs.io/en/latest/).
+    We decided to use [`pyabc`](https://pyabc.readthedocs.io/en/latest/) for the parameter estimation. It is a well-established tool and maintained by colleagues of ours, so we get good support😇. In combination with MEmilio, it has for example been used in [this publication](https://doi.org/10.1101/2025.09.25.25336633). We will just introduce its features as needed. For advanced setups, like distributed cluster usage, additional settings, visualizations, and examples we refer to the [documentation](https://pyabc.readthedocs.io/en/latest/).
 
     Here, we first need to import it and load some dependencies.
     """)
@@ -195,11 +195,11 @@ def _(mo):
     mo.md(r"""
     ## Setting up the prior
 
-    Before we can run the inference process, we first of all need a prior. This is a function that provides us with parameter estimates which we then use for simulations which in turn are then evaluated using an objective function.
+    Before we can run the inference process, we first of all need a prior. This is a distribution over possible parameter values from which we sample candidates, simulate the model, and then evaluate the simulations using an objective function.
 
-    `pyabc` has a function that creates a prior based on given prior distributions for all defined parameters. On sampling, this function outputs a dictionary with the parameter names and values. This fits neatly into our previously defined `run_simulation` function - What a lucky coincidence!
+    `pyabc` has functions that create priors for each parameter based on given distributions. On sampling, this function outputs a dictionary with the parameter names and values. This fits neatly into our previously defined `run_simulation` function - What a lucky coincidence!
 
-    As priors for our parameters we can use everything that is defined as a scipy random distribution. As we don't have any prior knowledge here (for example, life is easier if mean values are known or guessed), we will assume uniform distributions. We should mainly take care that we do not accidently sample implausible values (for example, negative values). This would be catched by our model and "corrected", but then we would simulate with different values than the optimization algorithm beliefs.
+    As priors for our parameters we can use everything that is defined as a `scipy` random distribution. As we don't have any prior knowledge here (for example, life is easier if mean values are known or guessed), we will assume uniform distributions. We should mainly take care that we do not accidentally sample implausible values (for example, negative values). This would be caught by our model and "corrected", but then we would simulate with different values than the optimization algorithm believes.
     """)
     return
 
@@ -245,7 +245,7 @@ def _(mo):
 
     The last step before running the fitting is the defintion of an objective (or distance) function. Here, we are given data for the ICU cases and deaths per day. Thus an obvious choice for the distance function is to calculate the difference between the simulated and the observed numbers per day and adding them up.
 
-    We need a function that takes a `data` dictionary provided by our `run_simulation` function and an `observation` dictionary, given by our input data. As with plotting in the previous tutorials, we have to access the correct columns of our simulation results by indexing as there is no name provided.
+    We need a function that takes a `data` dictionary provided by our `run_simulation` function and an `observation` dictionary, given by our input data. As in the plotting sections of the previous tutorials, we have to access the correct columns of our simulation results by indexing as there is no name provided.
     """)
     return
 
@@ -267,7 +267,7 @@ def _(mo):
     mo.md(r"""
     ## Data loading and testing
 
-    Before starting the fitting process, we need to load our data and we should once check that everything works as intended.
+    Before starting the fitting process, we need to load our data and check once that everything works as intended.
     """)
     return
 
@@ -321,11 +321,13 @@ def _(mo):
     mo.md(r"""
     # Inference process
 
-    With all the previous work done, there are only four more lines of code needed to run the inference process. First, we need to create the fitting object. It is called `ABCSMC` because we perform the fitting using Approximate Bayesian Computation -Sequential Monte Carlo. The object is created by giving it our simulation function, the prior and the distance. We set the population size to 300. This will reduce the chance of numerical instabilites. There are more possible parameters for which we will just use the defaults. The full documentation is available [here](https://pyabc.readthedocs.io/en/latest/api/pyabc.inference.html#pyabc.inference.ABCSMC).
+    With all the previous work done, there are only four more lines of code needed to run the inference process. First, we need to create the fitting object. It is called `ABCSMC` because we perform the fitting using Approximate Bayesian Computation -Sequential Monte Carlo. The object is created by giving it our simulation function, the prior and the distance. We set the population size to the somewhat arbitrary value of 400. This will reduce the chance of numerical instabilites. There are more possible parameters for which we will just use the defaults. The full documentation is available [here](https://pyabc.readthedocs.io/en/latest/api/pyabc.inference.html#pyabc.inference.ABCSMC).
 
-    Then we need to define a database path. `pyabc` stores all simulations in a database. This allows us to take a closer look at them after the inference. However, here we will use a temporary directory to store the database. Once we found that folder, we need to create the database before finally running the inference.
+    Then we need to define a database path. `pyabc` stores all simulations in a database. This allows us to take a closer look at them after the inference. However, here we will use a temporary directory to store the database. Once we have found that folder, we need to create the database before finally running the inference.
 
-    The inference is automatically parallelized to all available cores. Thus the runtime depends on your machine and may range from a minute up to a long time. You can first of all try to use a `population_size` of 100 or less to check out the runtime. If you encounter issues about the population size being `nan`, just try to create the `abc` object again. If it still doesn't work, try it with a bigger population size.
+    One important question is for how long to run the inference. Here, we will simply set a `minimum_epsilon` of 0.1. Then the inference is stopped once the value of the distance function is below 0.1. For other stopping criteria we refer to the [pyabc documentation](https://pyabc.readthedocs.io/en/latest/index.html).
+
+    The inference is automatically parallelized to all available cores. Thus the runtime depends on your machine and may range from a minute up to 15 minutes. To test performance, you can start with a `population_size` of 100 or less. If you encounter issues about the population size being `nan`, just try to create the `abc` object again. If it still doesn't work, try it with a bigger population size.
     """)
     return
 
@@ -348,14 +350,14 @@ def _(
 
 @app.cell
 def _(abc):
-    history = abc.run(max_nr_populations = 2, minimum_epsilon=0.05)
+    history = abc.run(minimum_epsilon=0.1)
     return (history,)
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    Great, that worked out well. Let's take a look at the evaluation figures by `pyabc`. Here we can see the posterior distributions for the different parameters. We would love to see sharp peaks and narrow tails which would imply a very good identifiability. Rendering the figure takes a few seconds.
+    Great, that worked out well. Let's take a look at the evaluation figures produced by `pyabc`. Here we can see the posterior distributions for the different parameters. We want to see sharp peaks and narrow tails, indicating good identifiability. Rendering the figure takes a few seconds.
     """)
     return
 
@@ -414,7 +416,7 @@ def _(
     fig, ax = plt.subplots()
     ax = pyabc.visualization.plot_data_callback(history, plot_critical_data, plot_critical_mean, ax=ax)
 
-    plt.scatter(range(0, 31), observation_data["Critical"], color = "C1", label = "Data")
+    plt.scatter(range(0, 31), observation_data["Critical"], color = "C1", label = "Data", zorder = 2)
     plt.xlabel("Time")
     plt.ylabel("# Cases")
     plt.title("Number of ICU patients")
@@ -442,7 +444,7 @@ def _(history, observation_data, plot_dead_data, plot_dead_mean, plt, pyabc):
     fig_dead, ax_dead = plt.subplots()
     ax_dead = pyabc.visualization.plot_data_callback(history, plot_dead_data, plot_dead_mean, ax=ax_dead)
 
-    plt.scatter(range(0, 31), observation_data["Deaths"], color = "C1", label = "Data")
+    plt.scatter(range(0, 31), observation_data["Deaths"], color = "C1", label = "Data", zorder = 2)
     plt.xlabel("Time")
     plt.ylabel("# Cases")
     plt.title("Cumulative number of dead patients")
@@ -454,9 +456,9 @@ def _(history, observation_data, plot_dead_data, plot_dead_mean, plt, pyabc):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    This fit looks really good! Apparently, we can fit to the data really well and also our uncertainty is very low. In our setting, this is not (too) surprising, as ODE models can be fitted very well und our underlying data was also produced by a (though slightly different) ODE model.
+    This fit looks really good! Apparently, we can fit to the data really well, and our uncertainty is also very low. In our setting, this is not (too) surprising, as ODE models can be fitted very well und our underlying data was also produced by an ODE model (albeit a slightly different one).
 
-    Let's take a look at how we can predict the future numbers in our epidemic. To do that, we return to the parameters of our last population. We already plotted them in the kde plot above, now we will use them for simulations.
+    Let's take a look at how we can predict the future numbers in our epidemic. To do that, we return to the parameters of our last population. We already plotted them in the kde plot above; now we will use them for simulations.
     """)
     return
 
