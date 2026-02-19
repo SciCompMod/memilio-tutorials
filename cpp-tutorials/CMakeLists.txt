@@ -44,3 +44,6 @@ target_link_libraries(tutorial_ide PRIVATE memilio ide_secir Boost::filesystem)
 add_executable(tutorial_lct tutorial_lct.cpp)
 target_link_libraries(tutorial_lct PRIVATE memilio lct_secir Boost::filesystem)
 
+add_executable(tutorial_abm tutorial_abm_household1.cpp)
+target_link_libraries(tutorial_abm PRIVATE memilio abm Boost::filesystem)
+
