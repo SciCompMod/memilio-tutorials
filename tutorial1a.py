@@ -62,7 +62,7 @@ def _():
     tmax = 100
     dt = 0.1
     contact_frequency = 10
-    return dt, t0, tmax, total_population
+    return contact_frequency, dt, t0, tmax, total_population
 
 
 @app.cell
@@ -82,13 +82,13 @@ def _(osecir):
 @app.cell
 def _(mo):
     mo.md(r"""
-    Next, we have to set the model parameters which include the average stay times per infection state, the state transition probabilities and the contact frequency. A list of all parameters can be found at https://memilio.readthedocs.io/en/latest/cpp/models/osecir.html. The parameters can be set as follows:
+    Next, we have to set the epidemiological model parameters which include the average stay times per infection state, the state transition probabilities and the contact frequency. A list of all parameters can be found at https://memilio.readthedocs.io/en/latest/cpp/models/osecir.html. The parameters can be set as follows:
     """)
     return
 
 
 @app.cell
-def _(AgeGroup, model, np):
+def _(AgeGroup, contact_frequency, model, np):
     # Set infection state stay times (in days)
     group = AgeGroup(0)
     model.parameters.TimeExposed[group] = 3.2
@@ -107,7 +107,7 @@ def _(AgeGroup, model, np):
     model.parameters.DeathsPerCritical[group] = 0.3
 
     # Set contact frequency
-    model.parameters.ContactPatterns.cont_freq_mat[0].baseline = np.ones((1, 1)) * 10
+    model.parameters.ContactPatterns.cont_freq_mat[0].baseline = np.ones((1, 1)) * contact_frequency
     return (group,)
 
 
