@@ -21,10 +21,43 @@ def _(mo):
 
     MEmilio implements various models based on ordinary differential equations (ODEs). ODE-based models are a subclass of compartmental models in which individuals are grouped into subpopulations called compartments.
 
-    In this tutorial we will setup and run MEmilio's ODE-based SECIR-type model. This model is particularly suited for pathogens with pre- or asymptomatic infection states and when severe or critical symptoms are possible. The model assumes perfect immunity after recovery. The used infection states or compartments are Susceptible (S), Exposed(E), Non-symptomatically Infected (Ins), Symptomatically Infected (Isy), Severely Infected (Isev), Critically Infected (Icri), Dead (D) and Recovered (R).
+    In this tutorial we will setup and run MEmilio's ODE-based SECIR-type model. This model is particularly suited for pathogens with pre- or asymptomatic infection states and when severe or critical symptoms are possible. The model assumes perfect immunity after recovery. The used infection states or compartments are Susceptible (S), Exposed(E), Non-symptomatically Infected (Ins), Symptomatically Infected (Isy), Severely Infected (Isev), Critically Infected (Icri), Dead (D) and Recovered (R). The transitions are depicted in the following figure.
 
     The example requires to have the memilio-simulation package installed which can be accessed under https://github.com/SciCompMod/memilio/tree/main/pycode/memilio-simulation.
     """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.mermaid(
+    """
+    graph TD
+        S["**S**\nSusceptible"] -->|infection| E["**E**\nExposed, Not Infectious"]
+        E -->|incubation| INS["**Ins**\nInfectious, No Symptoms"]
+
+        INS -->|develops symptoms| ISy["**Isy**\nInfectious, Symptoms"]
+        INS -->|recovers| R["**R**\nRecovered"]
+
+        ISy -->|worsens| ISev["**Isev**\nInfected, Severe"]
+        ISy -->|recovers| R
+
+        ISev -->|worsens| ICr["**Icr**\nInfected, Critical"]
+        ISev -->|recovers| R
+
+        ICr -->|recovers| R
+        ICr -->|dies| D["**D**\nDead"]
+
+        style S fill:#d4943a,color:#000,stroke:#000
+        style E fill:#d4943a,color:#000,stroke:#000
+        style INS fill:#d4943a,color:#000,stroke:#000
+        style ISy fill:#d4943a,color:#000,stroke:#000
+        style ISev fill:#d4943a,color:#000,stroke:#000
+        style ICr fill:#d4943a,color:#000,stroke:#000
+        style R fill:#d4943a,color:#000,stroke:#000
+        style D fill:#d4943a,color:#000,stroke:#000
+        """
+        )
     return
 
 
