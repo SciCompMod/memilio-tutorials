@@ -17,7 +17,9 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    # Introduction
+    # Simulating a first ODE-based model from Python
+
+    ## Introduction
 
     MEmilio implements various models based on ordinary differential equations (ODEs). ODE-based models are a subclass of compartmental models in which individuals are grouped into subpopulations called compartments.
 
@@ -64,7 +66,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    # Model Setup
+    ## Model Setup
 
     We first import the needed functions from the memilio-simulation package:
     """)
@@ -172,7 +174,6 @@ def _(mo):
 
 @app.cell
 def _(model):
-    # Apply mathematical constraints to parameters
     model.check_constraints()
     return
 
@@ -180,31 +181,76 @@ def _(model):
 @app.cell
 def _(mo):
     mo.md(r"""
-    After having initialized the model, dynamics can be simulated. The simulation output is a time series containing the evolution of all compartments over time. In the following we simulate the model from `t0` to `tmax` with initial step size `dt` and subsequently print the time series result:
+    ## Model simulation
+
+    After having initialized the model, dynamics can be simulated. The simulation output is a time series containing the evolution of all compartments over time. We now simulate the model from `t0` to `tmax` -- using an initial step size `dt`.
     """)
     return
 
 
 @app.cell
 def _(dt, model, osecir, t0, tmax):
-    # Simulate model from t0 to tmax with initial step size dt
     result = osecir.simulate(t0, tmax, dt, model)
-    result.print_table()
     return (result,)
 
 
 @app.cell
 def _(mo):
     mo.md(r"""
-    Because we use an adaptive integrator as default, the result time series does not have equidistant time steps. If we however want to have values at predefined time points, MEmilio provides the functionality to linearly interpolate a time series. You can give the function the specific time points you want the results to be interpolated to or use the default setting which interpolates to full days.
+    ## Visualization of model output
+
+    Since we have used an adaptive integration scheme, the `result` time series contains irregular time points. We can look at the time points with `get_times`.
+    """)
+    return
+
+
+@app.cell
+def _(result):
+    # print the first 10 time points
+    print(result.get_times()[0:10])
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    We can also look at the compartmental values at these time points using `print_table`.
+    """)
+    return
+
+
+@app.cell
+def _(result):
+    result.print_table()
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    We can use MEmilio's functionality to linearly interpolate `TimeSeries` objects. By default, interpolation is conducted to to full days.
     """)
     return
 
 
 @app.cell
 def _(osecir, result):
-    # Interpolate result to full days
     interpolated_result = osecir.interpolate_simulation_result(result)
+    # print the first 10 time points
+    print(interpolated_result.get_times()[0:10])
+    return (interpolated_result,)
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    The interpolated result can be printed as before.
+    """)
+    return
+
+
+@app.cell
+def _(interpolated_result):
     interpolated_result.print_table()
     return
 
@@ -212,7 +258,7 @@ def _(osecir, result):
 @app.cell
 def _(mo):
     mo.md(r"""
-    Single result time points and its values can be accessed via the `get_time` and `get_value` functions. The whole time series can be converted to an array with the first row the time points and the following rows the compartment sizes using `as_ndarray`. Let's have a look at the simulated trajectories of all compartments:
+    Single time points and result values can be accessed via the `get_time` and `get_value` functions. The whole time series can be converted to an array with the first row the time points and the following rows the compartment sizes using `as_ndarray`. Let's have a look at the simulated trajectories of all compartments:
     """)
     return
 
@@ -222,7 +268,7 @@ def _(osecir, plt, result):
     # Convert time series to array
     result_array = result.as_ndarray()
 
-    # Plot the number of infected with symptoms over time
+    # Plot the compartment trajectories over time
     fig, ax = plt.subplots()
     time = result_array[0, :]
     ax.plot(time, result_array[1 + int(osecir.InfectionState.Susceptible), :], label='Susceptible')
@@ -243,7 +289,9 @@ def _(osecir, plt, result):
 @app.cell
 def _(mo):
     mo.md(r"""
-    In the simulated scenario, ~90% of the population got infected within the simulated time frame of 100 days. In a real pandemic, non-pharmaceutical interventions (NPIS) can be implemented to prevent an outbreak from occurring or mitigate its strength. These include for example mask wearing or physical distancing which aims at decreasing the effective contacts and hence the infection risk. NPIs can be realized in MEmilio's ODE-based models through applying dampings. How to do that will be shown in the next tutorial.
+    ## Summary and next steps
+
+    In the simulated scenario, ~90% of the population got infected within the simulated time frame of 100 days. In a real pandemic, non-pharmaceutical interventions (NPIS) can be implemented to prevent an outbreak from occurring or mitigate its strength. For instance, these include mask wearing or physical distancing which aims at decreasing the effective contacts and hence the infection risk. NPIs can be realized in MEmilio's (ODE-based) models through applying `Dampings`. How to do that will be shown in Tutorial 3. In Tutorial 2, we show how to extract information on daily new infections or hospitalizations through MEmilio's built-in flow formulation.
     """)
     return
 
