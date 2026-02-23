@@ -82,26 +82,24 @@ def _():
 @app.cell
 def _(mo):
     mo.md(r"""
-    Next, we need to specify the parameters. In this tutorial, we use a simple model without spatial or age resolution i.e. we only consider one (age) group. The non-epidemiological parameters are the total population size, the start day `t0`, the simulation time frame `tmax` and the contact frequency. We should also choose an initial time step, though the ODE solver will use adaptive time steps later on.
+    Next, we need to specify basic parameters. In this tutorial, we use a simple model without spatial resolution and with only one age group. We first define the `total_population` size and the simulation horizong through the start day `t0`, and the simulation's end point `tmax`. By default, the ODE is solved with adaptive time stepping and the initial time step is `dt`.
     """)
     return
 
 
 @app.cell
 def _():
-    # Initialize total population, simulation start time, simulation time frame and initial step size
     total_population = 100000
     t0 = 0
     tmax = 100
     dt = 0.1
-    contact_frequency = 10
-    return contact_frequency, dt, t0, tmax, total_population
+    return dt, t0, tmax, total_population
 
 
 @app.cell
 def _(mo):
     mo.md(r"""
-    A model without any further stratification i.e. with only one (sociodemographic) group is created via:
+    To set up a model without any further stratification, i.e., with only one age group is created a follows:
     """)
     return
 
@@ -115,13 +113,13 @@ def _(osecir):
 @app.cell
 def _(mo):
     mo.md(r"""
-    Next, we have to set the epidemiological model parameters which include the average stay times per infection state, the state transition probabilities and the contact frequency. A list of all parameters can be found at https://memilio.readthedocs.io/en/latest/cpp/models/osecir.html. The parameters can be set as follows:
+    Next, we have to set the epidemiological model parameters which include the average stay times per infection state, the state transition probabilities, and the contact frequency. A list of all parameters can be found at https://memilio.readthedocs.io/en/latest/cpp/models/osecir.html. The parameters can be set as follows:
     """)
     return
 
 
 @app.cell
-def _(AgeGroup, contact_frequency, model, np):
+def _(AgeGroup, model, np):
     # Set infection state stay times (in days)
     group = AgeGroup(0)
     model.parameters.TimeExposed[group] = 3.2
@@ -140,6 +138,7 @@ def _(AgeGroup, contact_frequency, model, np):
     model.parameters.DeathsPerCritical[group] = 0.3
 
     # Set contact frequency
+    contact_frequency = 10
     model.parameters.ContactPatterns.cont_freq_mat[0].baseline = np.ones((1, 1)) * contact_frequency
     return (group,)
 
@@ -147,14 +146,14 @@ def _(AgeGroup, contact_frequency, model, np):
 @app.cell
 def _(mo):
     mo.md(r"""
-    In addition to the parameters, the initial number of individuals in each compartment has to be set. If a compartment is not set, its initial value is zero. In this example we start our simulation with 1% of the population initially infected. We have to distribute the infected individuals to the different states one can have when being infected. We do this by distributing them equally to the `Exposed` and the `InfectedNoSymptoms` state which contains pre- and asymptomatically infectious individuals. That means 0.5% of the population is exposed, 0.5% is non-symptomatically infected and the rest (99%) is susceptible.
+    In addition to the parameters, the initial number of individuals in each compartment has to be set. If a compartment is not set, its initial value is zero by default. In this example, we start our simulation with 1 % of the population initially infected, distributing them equally to the `Exposed` and the `InfectedNoSymptoms` state, where the latter contains pre- and asymptomatic infectious individuals. With the last line, we set the remaining part of the population (99%) to be susceptible.
     """)
     return
 
 
 @app.cell
 def _(group, model, osecir, total_population):
-    # 1% of the population is initially infected, 0.5% Exposed and 0.5% in the pre- or asymptomatic state
+    # 1% of the population is initially infected, 0.5 % Exposed and 0.5 % in the pre- or asymptomatic state
     model.populations[group, osecir.InfectionState.Exposed] = 0.005 * total_population
     model.populations[group, osecir.InfectionState.InfectedNoSymptoms] = 0.005 * total_population
     # The rest of the population is Susceptible
@@ -166,7 +165,7 @@ def _(group, model, osecir, total_population):
 @app.cell
 def _(mo):
     mo.md(r"""
-    To get reasonable results, the model needs to have plausible parameter values e.g. average stay times or transition probabilities have to be greater zero. MEmilio provides the possibility to check and automatically correct the initialized parameters by applying the `apply_constraints` function. If a value has to be corred a warning is printed and the function returns `True`, otherwise it returns `False`.
+    To check that all parameter and compartmental values are nonnegative and transition probabilities are between zero and one, MEmilio provides the `check_constraints` function. If a value exceeds its meaningful range, a warning is printed and the function returns `True`, otherwise it returns `False`.
     """)
     return
 
@@ -174,7 +173,7 @@ def _(mo):
 @app.cell
 def _(model):
     # Apply mathematical constraints to parameters
-    model.apply_constraints()
+    model.check_constraints()
     return
 
 
