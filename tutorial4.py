@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.19.4"
+__generated_with = "0.19.11"
 app = marimo.App(width="medium")
 
 
@@ -10,6 +10,7 @@ def _():
     import matplotlib.pyplot as plt
     import pandas as pd
     import numpy as np
+
     return mo, np, pd, plt
 
 
@@ -18,7 +19,7 @@ def _(mo):
     mo.md(r"""
     # Breaking news 📺
 
-    Today, the German federal health authority RKI announced that the recently observed sharp increase in ICU case numbers after acute respiratory infections is due to a new lineage of the influenza virus. It was first sequenced at the University Hospital of Cologne and thus called Influenza B/Colognia/314/2026. After it's detection, laboratories in the whole of Germany rushed to test stored samples of recent patients so that we now have a good overview of the death counts and numbers of patients in ICUs.
+    Today, the German federal health authority RKI announced that the recently observed sharp increase in treatments in intensive care units (ICU) is due to a new lineage of the influenza virus. It was first sequenced at the University Hospital of Cologne and thus called Influenza B/Colognia/314/2026. After it's detection, laboratories in the whole of Germany rushed to test stored samples of recent patients so that we now have a good overview of the death counts and numbers of patients in ICUs.
 
     The oldest sample found was from an 80-year-old man from Cologne, who died on 2026-02-28. His family reported that he felt sick shortly after excessively celebrating Karneval on Rose Monday, which was 2026-02-16 this year.
 
@@ -32,14 +33,14 @@ def _(mo):
     mo.md(r"""
     # Introduction
 
-    In this tutorial we will try to infer model parameters based on "real" data. This will allow us to make predictions about the course of an epidemic and suggest appropriate interventions.
+    In this tutorial, we try to infer model parameters based on "real" data. This allows us to make predictions about the course of an epidemic and study sets of potential interventions.
 
-    This is the first in a series of three notebooks that will introduce the usage of Approximate Bayesian computation with MEmilio. We will start with a simple model and progressively improve our fits by adding different age groups and multiple regions.
+    This is the first notebook in a series of three that introduce the usage of Approximate Bayesian Computation (ABC) with MEmilio. We start with a simple model and progressively improve our fits by approaching the reality more closely, in particular by adding stratification by age groups and multiple regions.
 
-    This is not a tutorial on Approximate Bayesian Computation. For that, we refer to the tutorials of the software we use and the literature. We will just show how to use these tools together with the MEmilio software framework.
+    Note that this is not a tutorial on ABC. For details on ABC, we refer to the tutorials of pyabc and BayesFlow as listed below. Here, we show how to connect these tools with the MEmilio software framework.
 
-    In the first two tutorials we will use the package [pyabc](https://pyabc.readthedocs.io/en/latest/). It is a package for likelihood-free inference. This is, of course, somewhat overkill for a differentiable ODE model. However, short runtimes of such ODE models make them well-suited for a tutorial. If you want to use the same methods for our stochastic models, you only need to replace the model (and wait for a bit longer).
-    For the last tutorial we will use [Bayesflow](https://bayesflow.org/main/index.html), a state of the art python library for Bayesian inference with deep learning.
+    In the first two tutorials, we use the package [pyabc](https://pyabc.readthedocs.io/en/latest/) for likelihood-free inference. While more suitable approaches might be available for the model considered here, we use a simple model to demonstrate the coupling. For more advanced and stochastic models, you only need to replace the model and accept longer run times.
+    For the last tutorial, we use [Bayesflow](https://bayesflow.org/main/index.html), a state of the art python library for Bayesian inference with deep learning.
     """)
     return
 
@@ -49,7 +50,7 @@ def _(mo):
     mo.md(r"""
     # Model Setup
 
-    We will reuse the model that was already introduced in the last tutorials. It already has all the compartments for which we have data available, so we don't need to implement anything from scratch. Let's first import the necessary functions:
+    We will reuse the SECIR-type ODE-based model that was introduced in the previous tutorials. The model already has all the compartments for which we have data available, so we do not need to implement anything from scratch. Let's first import the necessary functions:
     """)
     return
 
@@ -58,14 +59,15 @@ def _(mo):
 def _():
     import memilio.simulation.osecir as osecir
     from memilio.simulation import AgeGroup, Damping, LogLevel, set_log_level
+    # deactivate the log level to avoid warning messages from adaptive step sizing
     set_log_level(LogLevel.Off)
-    return AgeGroup, osecir
+    return AgeGroup, LogLevel, osecir, set_log_level
 
 
 @app.cell
 def _(mo):
     mo.md(r"""
-    Next, we need a lot of parameters. We will first (i.e. in this notebook) try to fit a simple model without age groups or any spatial resolution. This, luckily, reduces our parameter space to just a few unknowns. The parameters that we already know are the total population of Germany, day 0 (Rose Monday is a good guess here), and the length of the simulation (from day 0 to the last reported day in the data). We should also choose an initial time step, but the ODE solver will use adaptive time steps later on. Previous studies give us good values for the contact rates in Germany, which we will just reuse here.
+    Next, we need to define the setting and the model parameters. We will first (i.e., in this notebook) try to fit a simple model with neither age groups nor spatial resolution. This, luckily, reduces our parameter space to just a few unknowns. We already know the total population size of Germany being aproximately 83 million. We set the initial day to 0 (Rose Monday is a good guess here) and ignore seasonality effects for now. The length of the simulation corresponds to the period of day 0 to the date of the last reported case. Previous studies give us good estimates for the contact rates in Germany, which we will just reuse here.
     """)
     return
 
@@ -76,23 +78,34 @@ def _():
     total_population = 83000000
     t0 = 0
     tmax = 30
-    dt = 0.1
     contact_frequency = 7.95
-    return contact_frequency, dt, t0, tmax, total_population
+    return contact_frequency, t0, tmax, total_population
 
 
 @app.cell
 def _(mo):
     mo.md(r"""
-    Our unknown parameters should only be set by other variables, so we can try out different combinations. To simplify this a little bit, we will use a dictionary that we call `parameters`. But first, we need to create the model. As mentioned before, we will only use one sociodemographic group here.
+    First, we create the model with one age group.
     """)
     return
 
 
 @app.cell
-def _(AgeGroup, osecir):
+def _(osecir):
     model = osecir.Model(1)
+    return
 
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    Instead of fixing the parameters, we will use a dictionary called `parameters`, which serves for sampling random realizations.
+    """)
+    return
+
+
+@app.cell
+def _(AgeGroup):
     def set_parameters(model, parameters):
         group = AgeGroup(0)
         model.parameters.TimeExposed[group] = parameters["TimeExposed"]
@@ -108,13 +121,14 @@ def _(AgeGroup, osecir):
         model.parameters.SeverePerInfectedSymptoms[group] = parameters["SeverePerInfectedSymptoms"]
         model.parameters.CriticalPerSevere[group] = parameters["CriticalPerSevere"]
         model.parameters.DeathsPerCritical[group] = parameters["DeathsPerCritical"]
+
     return (set_parameters,)
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    What should we do with the start population? Even though Influenza B(Colognia) has never been observed before, it is quite likely that there is some type of cross-immunity from other Influenza viruses. Nevertheless, as we don't have data on that, we will first of all assume that the whole population starts of susceptible. On day 0, we then have an unknown number of exposed people that got infected celebrating carneval. One of them is our first dead patient. Patient 0, however, likely did recover without being tested and will never be found.
+    How should we initialize the population? Even though Influenza B(Colognia) has never been observed before, it is quite likely that there is some type of cross-immunity from other Influenza viruses. Nevertheless, as we do not have data on that, we will first of all assume that the whole population starts off susceptible. On day 0, we then have an unknown number of exposed people that got infected celebrating Karneval. One of them is our first deceased patient. Patient 0, however, likely did recover without being tested and will never be found.
     """)
     return
 
@@ -125,23 +139,25 @@ def _(AgeGroup, osecir, total_population):
         group = AgeGroup(0)
         model.populations[group, osecir.InfectionState.Exposed] = parameters["InitiallyExposed"]
         model.populations.set_difference_from_total((group, osecir.InfectionState.Susceptible), total_population)
+
     return (set_population,)
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    Now we will combine the code into one function. This is necessary for our fitting process, but it also simplifies testing everything a lot.
+    Now we will combine the code fragments into one function. This is necessary for our fitting process, but it also simplifies testing everything a lot.
     """)
     return
 
 
 @app.cell
 def _(
+    LogLevel,
     contact_frequency,
-    dt,
     np,
     osecir,
+    set_log_level,
     set_parameters,
     set_population,
     t0,
@@ -149,22 +165,25 @@ def _(
 ):
     def run_simulation(parameters, tmax = tmax):
         # Create model and set parameters
-        local_model = osecir.Model(1)
-        set_population(local_model, parameters)
-        set_parameters(local_model, parameters)
-        local_model.parameters.ContactPatterns.cont_freq_mat[0].baseline = np.ones((1,1)) * contact_frequency
-        # Check that the parameters can not be impossible choices like, for example, negative dwelling times
-        local_model.apply_constraints()
+        influenza_model = osecir.Model(1)
+        set_population(influenza_model, parameters)
+        set_parameters(influenza_model, parameters)
+        influenza_model.parameters.ContactPatterns.cont_freq_mat[0].baseline = np.ones((1,1)) * contact_frequency
+        # Check that the parameters are meaningful, i.e., no negative dwelling times
+        set_log_level(LogLevel.Warn)
+        influenza_model.check_constraints()
+        set_log_level(LogLevel.Off)
 
-        result = osecir.simulate(t0, tmax, dt, local_model)
+        result = osecir.simulate(t0, tmax, 0.1, influenza_model)
         return {"data": osecir.interpolate_simulation_result(result).as_ndarray()}
+
     return (run_simulation,)
 
 
 @app.cell
 def _(mo):
     mo.md(r"""
-    Why did we choose to return a dictionary instead of just the time series? We will see that in the next chapter:
+    Why did we choose to return a dictionary instead of just the time series? We will see that in the next chapter.
     """)
     return
 
@@ -174,7 +193,7 @@ def _(mo):
     mo.md(r"""
     # Fitting Setup
 
-    We decided to use [`pyabc`](https://pyabc.readthedocs.io/en/latest/) for the parameter estimation. It is a well-established tool and maintained by colleagues of ours, so we get good support😇. In combination with MEmilio, it has for example been used in [this publication](https://doi.org/10.1101/2025.09.25.25336633). We will just introduce its features as needed. For advanced setups, like distributed cluster usage, additional settings, visualizations, and examples we refer to the [documentation](https://pyabc.readthedocs.io/en/latest/).
+    We decided to use [`pyABC`](https://pyabc.readthedocs.io/en/latest/), a well-established tool and maintained tool for parameter estimation. In combination with MEmilio, it has for example been used in [this publication](https://doi.org/10.1101/2025.09.25.25336633). We will just introduce its features as needed. For advanced setups, like distributed cluster usage, additional settings, visualizations, and examples we refer to the [documentation](https://pyabc.readthedocs.io/en/latest/).
 
     Here, we first need to import it and load some dependencies.
     """)
@@ -187,19 +206,20 @@ def _():
     import tempfile
     import pyabc
     import pyarrow
+
     return os, pyabc, tempfile
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## Setting up the prior
+    ## Setting up the prior distribution
 
-    Before we can run the inference process, we first of all need a prior. This is a distribution over possible parameter values from which we sample candidates, simulate the model, and then evaluate the simulations using an objective function.
+    Before we can run the inference process, we first of all need a prior (distribution). This is a distribution over possible parameter values from which we sample candidates, simulate the model, and then evaluate the simulations using an objective function.
 
-    `pyabc` has functions that create priors for each parameter based on given distributions. On sampling, this function outputs a dictionary with the parameter names and values. This fits neatly into our previously defined `run_simulation` function - What a lucky coincidence!
+    `pyABC` has functions that create priors for each parameter based on given distributions. On sampling, this function outputs a dictionary with the parameter names and values. This fits neatly into our previously defined `run_simulation` function - What a lucky coincidence!
 
-    As priors for our parameters we can use everything that is defined as a `scipy` random distribution. As we don't have any prior knowledge here (for example, life is easier if mean values are known or guessed), we will assume uniform distributions. We should mainly take care that we do not accidentally sample implausible values (for example, negative values). This would be caught by our model and "corrected", but then we would simulate with different values than the optimization algorithm believes.
+    As priors for our parameters, we can use everything that is defined as a `scipy` random distribution. As we do not have any prior knowledge here, we will assume uniform distributions. Note that life is easier if mean values are known or can be guessed. We should mainly take care that we do not accidentally sample implausible values (for example, negative values). In these cases, the model returns a warning. In order to avoid theses problems, priors should be selected carefully.
     """)
     return
 
@@ -259,6 +279,7 @@ def _(np, osecir):
         sim_ICU = sim[1+ int(osecir.InfectionState.InfectedCritical), :]
         sim_Death = sim[1 + int(osecir.InfectionState.Dead), :]
         return (np.sum(np.abs(real_ICU - sim_ICU)) + np.sum(np.abs(real_Deaths - sim_Death))) / 1000
+
     return (distance_function,)
 
 
@@ -401,6 +422,7 @@ def _(np, osecir):
         data = np.array([sum_stat['data'][1+ int(osecir.InfectionState.InfectedCritical), :] for sum_stat in sum_stats])
         mean = (data * weights.reshape((-1, 1))).sum(axis=0)
         ax.plot(range(0, 31), mean, color='C2', label = "Simulation mean")
+
     return plot_critical_data, plot_critical_mean
 
 
@@ -436,6 +458,7 @@ def _(np, osecir):
         data = np.array([sum_stat['data'][1+ int(osecir.InfectionState.Dead), :] for sum_stat in sum_stats])
         mean = (data * weights.reshape((-1, 1))).sum(axis=0)
         ax.plot(range(0, 31), mean, color='C2', label = "Simulation mean")
+
     return plot_dead_data, plot_dead_mean
 
 
@@ -476,6 +499,7 @@ def _(run_simulation):
     def run_simulation_with_params(df):
         params = get_params(df)
         return run_simulation(params, tmax= 60)
+
     return (run_simulation_with_params,)
 
 
