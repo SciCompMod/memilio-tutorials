@@ -1,6 +1,5 @@
 #include "lct_secir/model.h"
 #include "lct_secir/infection_state.h"
-#include "lct_secir/initializer_flows.h"
 #include "memilio/config.h"
 #include "memilio/utils/time_series.h"
 #include "memilio/epidemiology/uncertain_matrix.h"
@@ -9,6 +8,7 @@
 #include "memilio/utils/logging.h"
 #include "memilio/compartments/simulation.h"
 #include "memilio/data/analyze_result.h"
+#include "tutorial.h"
 
 #include <vector>
 
@@ -24,19 +24,19 @@ int main()
     // First, we define the number of age groups used in the model.
     const size_t num_agegroups = 1;
 
-    // We then define the number of subcompartments per InfectionState. The model-specific InfectionStates 
-    // can be found in `infection_state.h` in the model folder. The numbers for subdivision are passed to an 
-    // LctInfectionState object that is then passed to the Model object. Note that the number of subcompartments in the 
-    // Susceptible, Recovered and Dead compartments are always one as individuals are either only leaving or 
+    // We then define the number of subcompartments per InfectionState. The model-specific InfectionStates
+    // can be found in `infection_state.h` in the model folder. The numbers for subdivision are passed to an
+    // LctInfectionState object that is then passed to the Model object. Note that the number of subcompartments in the
+    // Susceptible, Recovered and Dead compartments are always one as individuals are either only leaving or
     // entering the respective compartments. The `ScalarType` type below by default represents computation in double
-    // precision. 
+    // precision.
     constexpr size_t NumExposed = 2, NumInfectedNoSymptoms = 3, NumInfectedSymptoms = 1, NumInfectedSevere = 1,
                      NumInfectedCritical = 5;
     using InfState                       = mio::lsecir::InfectionState;
     using LctState = mio::LctInfectionState<ScalarType, InfState, 1, NumExposed, NumInfectedNoSymptoms,
                                             NumInfectedSymptoms, NumInfectedSevere, NumInfectedCritical, 1, 1>;
 
-    // For a single age group, the following call is sufficient. 
+    // For a single age group, the following call is sufficient.
     // For age-stratified models, we need to supply one LctState per age group.
     using Model = mio::lsecir::Model<ScalarType, LctState>;
     Model model;
@@ -54,29 +54,14 @@ int main()
     std::vector<std::vector<ScalarType>> initial_populations = {
         initial_susceptible,    initial_exposed,          initial_infectednosymptoms, initial_infectedsymptoms,
         initial_infectedsevere, initial_infectedcritical, initial_recovered,          initial_dead};
-    // A shorter initialization is given as follows.    
+    // A shorter initialization is given as follows.
     // std::vector<std::vector<ScalarType>> initial_populations = {{750}, {30, 20},          {20, 10, 10}, {50},
     //                                                            {50},  {10, 10, 5, 3, 2}, {20},         {10}};
 
-    // We now validate that the initial_population vector has the right shape.
-    if (initial_populations.size() != (size_t)InfState::Count) {
-        mio::log_error("The number of vectors in initial_populations does not match the number of InfectionStates.");
-        return 1;
-    }
-    if ((initial_populations[(size_t)InfState::Susceptible].size() !=
-         LctState::get_num_subcompartments<InfState::Susceptible>()) ||
-        (initial_populations[(size_t)InfState::Exposed].size() != NumExposed) ||
-        (initial_populations[(size_t)InfState::InfectedNoSymptoms].size() != NumInfectedNoSymptoms) ||
-        (initial_populations[(size_t)InfState::InfectedSymptoms].size() != NumInfectedSymptoms) ||
-        (initial_populations[(size_t)InfState::InfectedSevere].size() != NumInfectedSevere) ||
-        (initial_populations[(size_t)InfState::InfectedCritical].size() != NumInfectedCritical) ||
-        (initial_populations[(size_t)InfState::Recovered].size() !=
-         LctState::get_num_subcompartments<InfState::Recovered>()) ||
-        (initial_populations[(size_t)InfState::Dead].size() != LctState::get_num_subcompartments<InfState::Dead>())) {
-        mio::log_error("The length of at least one vector in initial_populations does not match the related number of "
-                       "subcompartments.");
-        return 1;
-    }
+    // We now validate that the initial_population vector has the right shape. For this we use
+    // check_initial_population_per_group, see tutorial.h Since we are considering only one age group in this example,
+    // we can apply the function directly to initial_populations.
+    check_initial_population_per_group<LctState>(initial_populations);
 
     // After validation, we transfer the initial values in initial_populations to the model.
     std::vector<ScalarType> flat_initial_populations;
@@ -102,20 +87,20 @@ int main()
     model.parameters.get<mio::lsecir::DeathsPerCritical<ScalarType>>()[0]              = 0.3;
 
     // Further epidemiological parameters define the transmission probability of Susceptibles on contact with
-    // infectious individuals, the relative risk of transmission from individuals that are infectious but not 
+    // infectious individuals, the relative risk of transmission from individuals that are infectious but not
     // symptomatic, and the risk of infection from indidivuals that are infectious and symptomatic.
     model.parameters.get<mio::lsecir::TransmissionProbabilityOnContact<ScalarType>>()[0] = 0.05;
     model.parameters.get<mio::lsecir::RelativeTransmissionNoSymptoms<ScalarType>>()[0]   = 0.7;
     model.parameters.get<mio::lsecir::RiskOfInfectionFromSymptomatic<ScalarType>>()[0]   = 0.25;
 
-    // In order to include seasonality, we can set the seasonality's impact and the start day of 
-    // simulation. Seasonality is modeled by a sinoidal function. With a Seasonality value of 0.2, the risk of 
+    // In order to include seasonality, we can set the seasonality's impact and the start day of
+    // simulation. Seasonality is modeled by a sinoidal function. With a Seasonality value of 0.2, the risk of
     // transmission on January 1st is 50 % higher than on July 1st.
     model.parameters.get<mio::lsecir::Seasonality<ScalarType>>() = 0.2;
     model.parameters.get<mio::lsecir::StartDay<ScalarType>>() =
         40.; // Start the simulation on the 40th day of a year (i.e. February 9).
 
-    // Transmission is driven by the risk of transmission per contact and the contact matrix that defines the 
+    // Transmission is driven by the risk of transmission per contact and the contact matrix that defines the
     // average daily number of contacts between individuals. For a model with a single age group, the contact matrix
     // reduces to a simple scalar value (here, set to 10).
     mio::ContactMatrixGroup<ScalarType>& contact_matrix =
