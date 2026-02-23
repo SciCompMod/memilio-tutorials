@@ -48,7 +48,7 @@ def _():
 @app.cell
 def _(mo):
     mo.md(r"""
-    Next, we create and initialize a SECIR-type model with one age group. For a detailed description on taht, see Tutorial 1.
+    Next, we create and initialize a SECIR-type model with one age group. For a detailed description on that, see Tutorial 1.
     """)
     return
 
