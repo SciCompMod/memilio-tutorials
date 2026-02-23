@@ -16,26 +16,28 @@ int main()
 {
     // MEmilio implements a SECIR-type model utilizing the Linear Chain Trick (LCT). This is a generalization of simple
     // ODE-based models and allows for Erlang distributed stay times in the compartments by introducing subcompartments.
-    // Note that the resulting system is still described by ODEs.
+    // In contrast to integral formulations (see tutorial_ide.cpp), the resulting system is still described by ODEs.
 
     // The following example shows how to set up and run a simple LCT-SECIR model without any further stratification.
 
-    // *** Set up model. ***
-    // Define number of age groups.
-    size_t num_agegroups = 1;
+    /*** Model setup ***/
+    // First, we define the number of age groups used in the model.
+    const size_t num_agegroups = 1;
 
-    // We start by defining the number of subcompartments per InfectionState. These are passed to an LctInfectionState
-    // object that is then passed to the Model object. Note that the number of subcompartments in the Susceptible,
-    // Recovered and Dead compartments are always one as individuals are either only leaving or entering the
-    // respective compartments.
+    // We then define the number of subcompartments per InfectionState. The model-specific InfectionStates 
+    // can be found in `infection_state.h` in the model folder. The numbers for subdivision are passed to an 
+    // LctInfectionState object that is then passed to the Model object. Note that the number of subcompartments in the 
+    // Susceptible, Recovered and Dead compartments are always one as individuals are either only leaving or 
+    // entering the respective compartments. The `ScalarType` type below by default represents computation in double
+    // precision. 
     constexpr size_t NumExposed = 2, NumInfectedNoSymptoms = 3, NumInfectedSymptoms = 1, NumInfectedSevere = 1,
                      NumInfectedCritical = 5;
     using InfState                       = mio::lsecir::InfectionState;
     using LctState = mio::LctInfectionState<ScalarType, InfState, 1, NumExposed, NumInfectedNoSymptoms,
                                             NumInfectedSymptoms, NumInfectedSevere, NumInfectedCritical, 1, 1>;
 
-    // One single AgeGroup/Category member is used here. This is set implicitly by the number of LctState objects that
-    // are passed to the model.
+    // For a single age group, the following call is sufficient. For age-stratified models, we need to supply 
+    // one LctState per age group.
     using Model = mio::lsecir::Model<ScalarType, LctState>;
     Model model;
 
