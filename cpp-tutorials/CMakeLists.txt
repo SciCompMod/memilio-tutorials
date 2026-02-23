@@ -53,3 +53,5 @@ target_link_libraries(tutorial1 PRIVATE memilio ode_secir Boost::filesystem)
 add_executable(tutorial3 tutorial3.cpp)
 target_link_libraries(tutorial3 PRIVATE memilio ode_secir Boost::filesystem)
 
+add_executable(tutorial12_ensemble_sims tutorial12_ensemble_sims.cpp)
+target_link_libraries(tutorial12_ensemble_sims PRIVATE memilio ode_secir) 
