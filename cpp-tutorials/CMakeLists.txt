@@ -53,3 +53,6 @@ target_link_libraries(tutorial1 PRIVATE memilio ode_secir Boost::filesystem)
 add_executable(tutorial3 tutorial3.cpp)
 target_link_libraries(tutorial3 PRIVATE memilio ode_secir Boost::filesystem)
 
+add_executable(tutorial5 tutorial5.cpp)
+target_link_libraries(tutorial5 PRIVATE memilio ode_secir Boost::filesystem)
+
