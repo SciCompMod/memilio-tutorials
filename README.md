@@ -4,26 +4,24 @@ Check out the main code repository at https://github.com/SciCompMod/memilio .
 
 The official documentation can be found here https://memilio.readthedocs.io .
 
-### Jupyter notebook setup for C++
-
-Make sure you have a fairly recent installation of python and gcc.
-On a Linux system, `which gcc python` should print two paths.
+### Marimo notebook setup
 
 First, open a new terminal.
-Go to a directory for the new project, then create a virtual environment (here "venv") and install jupyter and the C++ kernel.
+Go to a directory for the new project, then create a virtual environment (here "venv") and install marimo:
 
 ``` sh
 python -m venv venv
 source venv/bin/activate
-python -m pip install jupyter jupyter-cpp-kernel
+python -m pip install marimo
 ```
 
-The notebook can then be started by running `jupyter-notebook` (within the venv we just created and activated).
-This should open a new browser window with the notebook. Otherwise, look for and open the link starting with `http://localhost:8888` from jupyter's output.
+Note that on Windows, you need to use `source .\venv\Scripts\activate` instead.
 
-The notebook can *later* be closed through the jupyter browser tab `File > Shut Down`, or by pressing `Ctrl+C` in the terminal twice.
+The notebook can then be started by running `marimo edit` (within the venv we just created and activated).
+This should open a new browser window with the notebook. Otherwise, look for and open the link with `http://localhost:2718` from marimo's output.
 
-You can try running the `hello-world.ipynb` notebook from the `Files` tab (within the jupyter browser tab).
+The notebook can *later* be closed through the red X in the top right of the marimo browser tab, or by pressing `Ctrl+C` in the terminal twice.
 
-To create a notebook using the C++ kernel, select the `Files` tab, then select `New > C++ 20` on the right.
-This will create a new notebook. Existing notebooks can be directly opened from the `Files` tab and should automatically launch the correct kernel.
+You should see the tutorials in the `Workspace` section (within the marimo browser tab). Otherwise, try re-running `marimo edit` from the directory containing this Readme.
+
+Tutorials can be started by clicking a file in the Workspace section. To switch from an opened file to another, you can use the `Files` view on the top left, or return to the homepage via the hamburger menu on the top right and selecting `Return home`.
