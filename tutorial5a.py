@@ -17,7 +17,8 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    # Introduction
+    # Simulating an ODE-based model with three age groups from Python
+    ## Introduction
 
     In Tutorial 1, we created, initialized and simulated MEmilio's ODE-based SECIR-type model without any sociodemographic resolution. All ODE-based models have the possibility to add an arbitrary number of sociodemographic groups which can represent certain certain risk groups, like vaccination or age groups. Adding those groups can have a relevant impact on the simulation outcome. If for example older people have a higher risk of severe and critical infections, that can have an impact on ICU occupancy.
     In the following, we initialize and simulate an ODE-based SECIR-type model with three age groups.
@@ -30,7 +31,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    # Model Setup
+    ## Model Setup
 
     We first import the needed functions from the memilio-simulation package:
     """)
@@ -158,6 +159,7 @@ def _(model):
 @app.cell
 def _(mo):
     mo.md(r"""
+    ## Model simulation
     After having initialized the model, dynamics can be simulated. The simulation output is a time series containing the evolution of all compartments per age group over time. In the following we simulate the model from `t0` to `tmax` with initial step size `dt` and subsequently print the time series result:
     """)
     return
@@ -190,6 +192,8 @@ def _(osecir, result):
 @app.cell
 def _(mo):
     mo.md(r"""
+    ## Visualization of model output
+    
     Single result time points and its values can be accessed via the `get_time` and `get_value` functions. The whole time series can be converted to an array with the first row the time points and the following rows the compartment sizes using `as_ndarray`. Let's have a look at the simulated trajectories for severe and critical infection of all age groups:
     """)
     return

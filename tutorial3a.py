@@ -17,7 +17,8 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    # Introduction
+    # Simulating an ODE-based model with a Damping from Python
+    ## Introduction
 
     In the previous tutorial, we created, initialized and simulated MEmilio's ODE-based SECIR-type model with one (age) group. In this tutorial, we will show how to incorporate non-pharmaceutical interventions (NPIs) through the use of `Dampings` in the ODE-based SECIR-type model.
 
@@ -29,7 +30,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    # Model Setup
+    ## Model Setup
 
     We first import the needed functions from the memilio-simulation package:
     """)
@@ -128,6 +129,8 @@ def _(group, model, osecir, total_population):
 @app.cell
 def _(mo):
     mo.md(r"""
+    ## Model simulation
+
     We simulate the model from `t0` to `tmax` with initial step size `dt` and subsequently print the time series result:
     """)
     return
@@ -160,6 +163,8 @@ def _(osecir, result):
 @app.cell
 def _(mo):
     mo.md(r"""
+    ## Visualization of model output
+
     We plot the trajectories of all infected compartments i.e. `Exposed`, `InfectedNoSymptoms`, `InfectedSymptoms`, `InfectedSevere` and `InfectedCritical`.
     """)
     return

@@ -17,7 +17,8 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    # Introduction
+    # Simulating an Graph-ODE metapopulation model from Python
+    ## Introduction
 
     In the previous tutorials, we saw how to set up and run an age-resolved ODE-based SECIR-type model. However, one limiting assumption of simple ODE-based models is the assumption of homogenous mixing within the population. To overcome this limitation and incorporate spatial heterogeneity, in this example we show how to use MEmilio's graph-based metapopulation model. This model realizes mobility between regions via graph edges, while every region is represented by a graph node containing it's own ODE-based model.
 
@@ -29,7 +30,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    # Model Setup
+    ## Model Setup
 
     We first import the needed functions from the memilio-simulation package:
     """)
@@ -247,6 +248,8 @@ def _(graph, mio, model, np, osecir):
 @app.cell
 def _(mo):
     mo.md(r"""
+    ## Model simulation
+    
     We now have finished initializing the metapopulation model. The graph-based simulation is created and advanced until `tmax` via:
     """)
     return
@@ -293,6 +296,8 @@ def _(osecir, result_region0, result_region1):
 @app.cell
 def _(mo):
     mo.md(r"""
+    ## Visualization of model output
+        
     Finally, we can compare the trajectories of all infection states for both regions. In the following, we plot the number of `InfectedNoSymptoms` aggregated over all age groups for both regions:
     """)
     return
