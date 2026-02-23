@@ -165,7 +165,7 @@ def _(group, model, osecir, total_population):
 @app.cell
 def _(mo):
     mo.md(r"""
-    To check that all parameter and compartmental values are nonnegative and transition probabilities are between zero and one, MEmilio provides the `check_constraints` function. If a value exceeds its meaningful range, a warning is printed and the function returns `True`, otherwise it returns `False`.
+    To check that all initial parameter and compartmental values are in a meaningful range, MEmilio provides the `check_constraints` function. If a value exceeds its meaningful range, a warning is printed and the function returns `True`, otherwise it returns `False`.
     """)
     return
 
