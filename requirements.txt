@@ -1,0 +1,7 @@
+marimo
+memilio
+matplotlib
+pandas
+numpy
+pyabc
+pyarrow
