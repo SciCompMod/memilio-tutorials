@@ -258,7 +258,7 @@ def _(mo):
 @app.cell
 def _(graph, osecir, t0, tmax):
     # Create graph simulation and advance until tmax
-    sim = osecir.MobilitySimulation(graph, t0, dt=0.5)
+    sim = osecir.MobilitySimulation(graph, t0, dt=dt_exchange)
     sim.advance(tmax)
     return (sim,)
 
