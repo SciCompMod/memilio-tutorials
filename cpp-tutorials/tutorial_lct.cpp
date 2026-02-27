@@ -43,9 +43,9 @@ int main()
 
     // Next, we define the initial values of the population per subcompartment with 750 susceptible individuals,
     // 30 individuals in the first exposed and 20 individuals in the second exposed state et cetera
-    std::vector<ScalarType> initial_susceptible              = {750};
-    std::vector<ScalarType> initial_exposed                  = {30, 20};
-    std::vector<ScalarType> initial_infectednosymptoms       = {20, 10, 10};
+    std::vector<ScalarType> initial_susceptible              = {5000};
+    std::vector<ScalarType> initial_exposed                  = {300, 200};
+    std::vector<ScalarType> initial_infectednosymptoms       = {200, 100, 100};
     std::vector<ScalarType> initial_infectedsymptoms         = {50};
     std::vector<ScalarType> initial_infectedsevere           = {50};
     std::vector<ScalarType> initial_infectedcritical         = {10, 10, 5, 3, 2};
@@ -75,13 +75,13 @@ int main()
     // After having defined the populations, we now set the epidemiological parameters
     // that define the times individuals spend on average in the respective InfectionStates.
     model.parameters.get<mio::lsecir::TimeExposed<ScalarType>>()[0]            = 3.2;
-    model.parameters.get<mio::lsecir::TimeInfectedNoSymptoms<ScalarType>>()[0] = 2.;
+    model.parameters.get<mio::lsecir::TimeInfectedNoSymptoms<ScalarType>>()[0] = 4.;
     model.parameters.get<mio::lsecir::TimeInfectedSymptoms<ScalarType>>()[0]   = 5.8;
     model.parameters.get<mio::lsecir::TimeInfectedSevere<ScalarType>>()[0]     = 9.5;
     model.parameters.get<mio::lsecir::TimeInfectedCritical<ScalarType>>()[0]   = 7.1;
 
     // The following parameters define the relevant transition probabilities between InfectionStates.
-    model.parameters.get<mio::lsecir::RecoveredPerInfectedNoSymptoms<ScalarType>>()[0] = 0.09;
+    model.parameters.get<mio::lsecir::RecoveredPerInfectedNoSymptoms<ScalarType>>()[0] = 0.05;
     model.parameters.get<mio::lsecir::SeverePerInfectedSymptoms<ScalarType>>()[0]      = 0.2;
     model.parameters.get<mio::lsecir::CriticalPerSevere<ScalarType>>()[0]              = 0.25;
     model.parameters.get<mio::lsecir::DeathsPerCritical<ScalarType>>()[0]              = 0.3;
@@ -111,8 +111,12 @@ int main()
     // *** Model simulation ***
     // For model simulation, we first define simulation parameters.
     ScalarType t0      = 0.;
-    ScalarType tmax    = 10.;
+    ScalarType tmax    = 100.;
     ScalarType init_dt = 0.5; // May change throughout simulation as we are using an adaptive solver.
+
+    // We check if all model constraints regarding initial values and parameters are satisfied before simulating.
+    // Note: MEmilio's check_constraints() returns True if a constraint is violated, and False if everything is fine.
+    model.check_constraints();
 
     // We then perform a simulation.
     mio::TimeSeries<ScalarType> result = mio::simulate<ScalarType, Model>(t0, tmax, init_dt, model);
@@ -123,4 +127,7 @@ int main()
     // We interpolate the simulation results to days and print the results.
     auto interpolated_results = mio::interpolate_simulation_result(population_no_subcompartments);
     interpolated_results.print_table({"S", "E", "C", "I", "H", "U", "R", "D "}, 12, 4);
+
+    // We export the results as csv which is saved in the current folder. Then we can plot the results using plot_secir_results.py.
+    auto export_status = population_no_subcompartments.export_csv("../../cpp-tutorials/results_lct.csv");
 }
