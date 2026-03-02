@@ -125,7 +125,11 @@ int main()
     auto ensemble_result = simulation_study.run(create_simulation, handle_result);
 
     // Now, we can evaluate the results, for example, by checking the median values.
-    ensemble_percentile(ensemble_result, 0.5).front().print_table({}, 10, 2);
+    auto median_result = ensemble_percentile(ensemble_result, 0.5).front();
+    median_result.print_table({}, 10, 2);
+
+    // Save the result to CSV, so we can plot it using the "plot_secir_results.py" script.
+    (void)median_result.export_csv("../results_ensemble_sims.csv");
 
     // Close the MPI context and exit.
     mio::mpi::finalize();
