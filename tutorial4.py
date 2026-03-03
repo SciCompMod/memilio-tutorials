@@ -60,7 +60,7 @@ def _():
     import memilio.simulation.osecir as osecir
     from memilio.simulation import AgeGroup, Damping, LogLevel, set_log_level
     # deactivate the log level to avoid warning messages from adaptive step sizing
-    set_log_level(LogLevel.Off)
+    set_log_level(LogLevel.Error)
     return AgeGroup, LogLevel, osecir, set_log_level
 
 

@@ -20,7 +20,7 @@ def _(mo):
     # Simulating an ODE-based model with three age groups from Python
     ## Introduction
 
-    In Tutorial 1, we created, initialized and simulated MEmilio's ODE-based SECIR-type model without any sociodemographic resolution. All ODE-based models have the possibility to add an arbitrary number of sociodemographic groups which can represent certain certain risk groups, like vaccination or age groups. Adding those groups can have a relevant impact on the simulation outcome. If for example older people have a higher risk of severe and critical infections, that can have an impact on ICU occupancy.
+    In Tutorial 1, we created, initialized and simulated MEmilio's ODE-based SECIR-type model without any sociodemographic resolution. All ODE-based models have the possibility to add an arbitrary number of sociodemographic groups which can represent certain risk groups, like vaccination or age groups. Adding those groups can have a relevant impact on the simulation outcome. If for example older people have a higher risk of severe and critical infections, that can have an impact on ICU occupancy.
     In the following, we initialize and simulate an ODE-based SECIR-type model with three age groups.
 
     The example requires to have the memilio-simulation package installed which can be accessed under https://github.com/SciCompMod/memilio/tree/main/pycode/memilio-simulation.
@@ -42,7 +42,7 @@ def _(mo):
 def _():
     import memilio.simulation.osecir as osecir
     from memilio.simulation import AgeGroup, LogLevel, set_log_level
-    set_log_level(LogLevel.Off)
+    set_log_level(LogLevel.Error)
     return AgeGroup, osecir
 
 
@@ -76,14 +76,14 @@ def _(mo):
 @app.cell
 def _(osecir):
     num_age_groups = 3
-    model = osecir.Model(3)
+    model = osecir.Model(num_age_groups)
     return model, num_age_groups
 
 
 @app.cell
 def _(mo):
     mo.md(r"""
-    Now, we have to set the epidemiological model parameters which are dependent on age group. A list of all parameters can be found at https://memilio.readthedocs.io/en/latest/cpp/models/osecir.html.
+    Now, we have to set the epidemiological model parameters which are dependent on the age group. A list of all parameters can be found at https://memilio.readthedocs.io/en/latest/cpp/models/osecir.html.
 
     We choose an increasing risk of severe and critical infections for age group 2 and 3 compared to age group 1. The other parameters are equal for all age groups.
     """)
@@ -106,7 +106,7 @@ def _(AgeGroup, model, np, num_age_groups):
         model.parameters.RecoveredPerInfectedNoSymptoms[AgeGroup(ag)] = 0.2
         model.parameters.RiskOfInfectionFromSymptomatic[AgeGroup(ag)] = 0.25
         model.parameters.DeathsPerCritical[AgeGroup(ag)] = 0.3
-    
+
     # The groups have an increasing risk of severe and critical infections
     model.parameters.SeverePerInfectedSymptoms[AgeGroup(0)] = 0.2
     model.parameters.SeverePerInfectedSymptoms[AgeGroup(1)] = 0.2 * 1.5
@@ -144,7 +144,7 @@ def _(AgeGroup, model, num_age_groups, osecir, total_population):
 @app.cell
 def _(mo):
     mo.md(r"""
-    To get reasonable results, the model needs to have plausible parameter values e.g. average stay times or transition probabilities have to be greater zero. MEmilio provides the possibility to check and automatically correct the initialized parameters by applying the `apply_constraints` function. If a value has to be corred a warning is printed and the function returns `True`, otherwise it returns `False`.
+    To get reasonable results, the model needs to have plausible parameter values e.g. average stay times or transition probabilities have to be greater zero. MEmilio provides the possibility to check and automatically correct the initialized parameters by applying the `apply_constraints` function. If a value has to be corrected, a warning is printed and the function returns `True`, otherwise it returns `False`.
     """)
     return
 
@@ -193,8 +193,8 @@ def _(osecir, result):
 def _(mo):
     mo.md(r"""
     ## Visualization of model output
-    
-    Single result time points and its values can be accessed via the `get_time` and `get_value` functions. The whole time series can be converted to an array with the first row the time points and the following rows the compartment sizes using `as_ndarray`. Let's have a look at the simulated trajectories for severe and critical infection of all age groups:
+
+    Single result time points and their values can be accessed via the `get_time` and `get_value` functions. The whole time series can be converted to an array with the first row the time points and the following rows the compartment sizes using `as_ndarray`. Let's have a look at the simulated trajectories for severe and critical infection of all age groups:
     """)
     return
 
@@ -223,7 +223,7 @@ def _(osecir, plt, result):
 @app.cell
 def _(mo):
     mo.md(r"""
-    So far, we only cosidered one homogeneously mixed population. However, disease spread is often influenced by regional patterns resulting in spatial heterogeneity among the distribution of infections. To include spatial resolution, MEmilio's ODE-based Graph-Metapopulation Model can be used. This is further explained in the next tutorial.
+    So far, we only considered one homogeneously mixed population. However, disease spread is often influenced by regional patterns resulting in spatial heterogeneity among the distribution of infections. To include spatial resolution, MEmilio's ODE-based Graph-Metapopulation Model can be used. This is further explained in the next tutorial.
     """)
     return
 
