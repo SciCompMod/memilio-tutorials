@@ -39,10 +39,16 @@ set(MEMILIO_BUILD_SIMULATIONS OFF)
 add_subdirectory(${memilio_SOURCE_DIR}/cpp ${memilio_BINARY_DIR})
 
 add_executable(tutorial_ide tutorial_ide.cpp)
-target_link_libraries(tutorial_ide PRIVATE memilio ide_secir Boost::filesystem)
+target_link_libraries(tutorial_ide PRIVATE memilio ide_secir)
+
+add_executable(exercise_ide exercise_ide.cpp)
+target_link_libraries(exercise_ide PRIVATE memilio ide_secir)
 
 add_executable(tutorial_lct tutorial_lct.cpp)
-target_link_libraries(tutorial_lct PRIVATE memilio lct_secir Boost::filesystem)
+target_link_libraries(tutorial_lct PRIVATE memilio lct_secir)
+
+add_executable(exercise_lct exercise_lct.cpp)
+target_link_libraries(exercise_lct PRIVATE memilio lct_secir)
 
 # add_executable(tutorial_abm tutorial_abm_household1.cpp)
 # target_link_libraries(tutorial_abm PRIVATE memilio abm Boost::filesystem)

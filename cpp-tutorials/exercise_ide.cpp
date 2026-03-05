@@ -62,7 +62,10 @@ int main()
     // point of the TimeSeries transitions_init at time -10 will give us a sufficient number of time points before t0.
     // For more information on this, we refer to the documentation of TransitionDistributions in
     // models/ide_secir/parameters.h.
-    transitions_init.add_time_point(-10, vec_init);
+
+    // TODO: Set the initial time point of the TimeSeries transitions_init where the initial time is -10 and the value
+    // is given by vec_init.
+
     // We add further time points with distance dt until time t0. Here, we already define the start time of our simulation
     // as we will start the simulation at the last time point in transitions_init.
     while (transitions_init.get_last_time() < t0 - dt / 2) {
@@ -90,12 +93,11 @@ int main()
     // Each transition can be set individually and is not necessary that all transition follow the same distribution
     // with the same parameter. For this, MEmilio already implements several possible distributions such as exponential,
     // gamma and lognormal distributions but arbitrary distributions can be implemented, see
-    // cpp/memilio/epidemiology/state_age_function.h. Below, we demonstrate how to set the distribution for the transition
-    // from InfectedNoSymptoms to InfectedSymptoms with a lognormal distribution.
-    mio::LognormSurvivalFunction lognormal(0.3);
-    mio::StateAgeFunctionWrapper<ScalarType> transition_distribution_INStISy(lognormal);
-    vec_transition_distribution[(size_t)mio::isecir::InfectionTransition::InfectedNoSymptomsToInfectedSymptoms] =
-        transition_distribution_INStISy;
+    // cpp/memilio/epidemiology/state_age_function.h.
+    //
+    // TODO: Set the distribution for the transition from InfectedNoSymptoms to InfectedSymptoms with a lognormal
+    // distribution with an initial distribution parameter of 0.3.
+
     // Finally, the TransitionDistributions of the IDE-SECIR model are set according to vec_transition_distribution.
     model.parameters.get<mio::isecir::TransitionDistributions>()[mio::AgeGroup(0)] = vec_transition_distribution;
 
