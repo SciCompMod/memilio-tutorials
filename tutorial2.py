@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.19.11"
+__generated_with = "0.20.4"
 app = marimo.App(width="medium")
 
 
@@ -137,6 +137,8 @@ def _(mo):
     2. Calculate the difference between consecutive days to get the discrete daily incidence.
 
     Since the flow values are stored in a `TimeSeries` object, we can directly use the interpolation method to achieve this.
+
+    Note: the adaptive integrator may make time steps which are larger than 1 day. Following, `interpolate_simulation_result` then fills missing days by linear interpolation of the cumulative flows, producing constant values in the daily differences.
     """)
     return
 

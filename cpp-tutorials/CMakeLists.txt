@@ -57,6 +57,9 @@ target_link_libraries(tutorial1 PRIVATE memilio ode_secir Boost::filesystem)
 add_executable(exercise1 exercises/exercise1.cpp)
 target_link_libraries(exercise1 PRIVATE memilio ode_secir Boost::filesystem)
 
+add_executable(tutorial2 tutorial2.cpp)
+target_link_libraries(tutorial2 PRIVATE memilio ode_secir Boost::filesystem)
+
 add_executable(tutorial3 tutorial3.cpp)
 target_link_libraries(tutorial3 PRIVATE memilio ode_secir Boost::filesystem)
 
@@ -65,6 +68,12 @@ target_link_libraries(tutorial5 PRIVATE memilio ode_secir Boost::filesystem)
 
 add_executable(tutorial7 tutorial7.cpp)
 target_link_libraries(tutorial7 PRIVATE memilio ode_secir Boost::filesystem)
+
+add_executable(tutorial10 tutorial10.cpp)
+target_link_libraries(tutorial10 PRIVATE memilio ode_secir Boost::filesystem)
+
+add_executable(tutorial11 tutorial11.cpp)
+target_link_libraries(tutorial11 PRIVATE memilio ode_secir Boost::filesystem)
 
 add_executable(tutorial12_ensemble_sims tutorial12_ensemble_sims.cpp)
 target_link_libraries(tutorial12_ensemble_sims PRIVATE memilio ode_secir)
