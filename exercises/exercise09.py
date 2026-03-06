@@ -21,7 +21,7 @@ def _(mo):
 
     Today, the German federal health authority RKI announced that the recently observed sharp increase in ICU case numbers following acute respiratory infections is caused by a new lineage of the influenza virus. It was first sequenced at the University Hospital of Cologne and has consequently been named *Influenza B/Colognia/314/2026*. Following its detection, laboratories across Germany rushed to test stored samples from recent patients, giving us a reasonably complete picture of ICU admissions and deaths to date.
 
-    The oldest sample identified came from an 80-year-old man from Cologne who died on 2026-02-29. His family reported that he first felt ill shortly after excessively celebrating Carnival on Rose Monday, which fell on 2026-02-16 this year.
+    The first patients felt ill shortly after excessively celebrating Carnival on Rose Monday, which fell on 2026-02-16 this year.
 
     The RKI has today published all available data and called on modellers worldwide to estimate disease parameters and forecast the further course of the outbreak.
     """)
@@ -183,6 +183,8 @@ def _(mio, os):
             mio.read_mobility_plain(minimum_file),
         )
 
+        contact_matrices[0].add_damping(mio.Damping(coeffs=damping_value, t=damping_start))
+
         # TODO: Add a damping to contact_matrices[0] using mio.Damping(...).
         # The damping should apply a 6×6 matrix filled with damping_value
         # uniformly across all age groups, starting at time damping_start.
@@ -268,9 +270,13 @@ def _(np):
 
                 coeff_ij = (mobility_matrix[i, j] / total_i) * np.ones(num_groups)
                 coeff_ji = (mobility_matrix[j, i] / total_j) * np.ones(num_groups)
+                coeff_ij[-1] = 0
+                coeff_ji[-1] = 0
 
                 # TODO: Set the Dead compartment's mobility coefficient to 0 for
                 # both directions — deceased individuals should not commute.
+
+                graph.add_edge(i, j, )
 
                 # TODO: Add directed edges in both directions to the graph.
                 # Use graph.add_edge()
