@@ -175,15 +175,13 @@ def _(mio, os):
             damping_value:  Strength of the contact reduction in [0, 1]
         """
         contact_matrices = mio.ContactMatrixGroup(1, 6)
-        baseline_file = os.path.join("contact_matrix_baseline.txt")
-        minimum_file = os.path.join("contact_matrix_minimum.txt")
+        baseline_file = os.path.join("data/contact_matrix_baseline.txt")
+        minimum_file = os.path.join("data/contact_matrix_minimum.txt")
 
         contact_matrices[0] = mio.ContactMatrix(
             mio.read_mobility_plain(baseline_file),
             mio.read_mobility_plain(minimum_file),
         )
-
-        contact_matrices[0].add_damping(mio.Damping(coeffs=damping_value, t=damping_start))
 
         # TODO: Add a damping to contact_matrices[0] using mio.Damping(...).
         # The damping should apply a 6×6 matrix filled with damping_value
@@ -260,7 +258,7 @@ def _(np):
         Mobility is expressed as fraction of population commuting per day.
         Dead individuals are excluded from mobility.
         """
-        mobility_matrix = np.loadtxt("mobility_matrix.txt")
+        mobility_matrix = np.loadtxt("data/mobility_matrix.txt")
         num_groups = graph.get_node(0).property.model.populations.numel()
 
         for i in range(graph.num_nodes):
@@ -270,13 +268,9 @@ def _(np):
 
                 coeff_ij = (mobility_matrix[i, j] / total_i) * np.ones(num_groups)
                 coeff_ji = (mobility_matrix[j, i] / total_j) * np.ones(num_groups)
-                coeff_ij[-1] = 0
-                coeff_ji[-1] = 0
 
                 # TODO: Set the Dead compartment's mobility coefficient to 0 for
                 # both directions — deceased individuals should not commute.
-
-                graph.add_edge(i, j, )
 
                 # TODO: Add directed edges in both directions to the graph.
                 # Use graph.add_edge()
@@ -605,7 +599,7 @@ def _(np, pd):
                         (the '1' is a batch dimension for workflow.sample)
             data:       np.ndarray of shape (T, 12, 5)
         """
-        df = pd.read_csv("cases_3.csv").to_numpy()  # shape: (T, 60)
+        df = pd.read_csv("data/cases_3.csv").to_numpy()  # shape: (T, 60)
 
         data = np.zeros((df.shape[0], df.shape[1] // 5, 5))
         conditions = {}
