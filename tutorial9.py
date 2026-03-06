@@ -180,9 +180,9 @@ def _(mio, np, os):
         """
         contact_matrices = mio.ContactMatrixGroup(1, 6)
         baseline_file = os.path.join(
-            "contact_matrix_baseline.txt")
+            "data/contact_matrix_baseline.txt")
         minimum_file = os.path.join(
-            "contact_matrix_minimum.txt")
+            "data/contact_matrix_minimum.txt")
 
         # Build a ContactMatrix from baseline and minimum files
         contact_matrices[0] = mio.ContactMatrix(
@@ -270,7 +270,7 @@ def _(mio, np, osecir):
         Mobility is expressed as fraction of population commuting per day.
         Dead individuals are excluded from mobility.
         """
-        mobility_matrix = np.loadtxt("mobility_matrix.txt")
+        mobility_matrix = np.loadtxt("data/mobility_matrix.txt")
         # Number of state variables per node (age groups × compartments)
         num_groups = graph.get_node(0).property.model.populations.numel()
 
