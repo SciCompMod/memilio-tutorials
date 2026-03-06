@@ -147,7 +147,7 @@ def _(dt, model, osecir, t0, tmax):
 @app.cell
 def _(mo):
     mo.md(r"""
-    Subsequently, we interpolate the simulated time series to full days using the linear interpolation function:
+    Because we use an adaptive integrator as default, the result time series does not have equidistant time steps. If we however want to have values at predefined time points, MEmilio provides the functionality to linearly interpolate a time series. You can give the function the specific time points you want the results to be interpolated to or use the default setting which interpolates to full days.
     """)
     return
 

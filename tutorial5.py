@@ -169,24 +169,10 @@ def _(mo):
 def _(dt, model, osecir, t0, tmax):
     # Simulate model from t0 to tmax with initial step size dt
     result = osecir.simulate(t0, tmax, dt, model)
-    result.print_table()
-    return (result,)
-
-
-@app.cell
-def _(mo):
-    mo.md(r"""
-    Because we use an adaptive integrator as default, the result time series does not have equidistant time steps. If we however want to have values at predefined time points, MEmilio provides the functionality to linearly interpolate a time series. You can give the function the specific time points you want the results to be interpolated to or use the default setting which interpolates to full days.
-    """)
-    return
-
-
-@app.cell
-def _(osecir, result):
     # Interpolate result to full days
     interpolated_result = osecir.interpolate_simulation_result(result)
     interpolated_result.print_table()
-    return
+    return (result,)
 
 
 @app.cell
