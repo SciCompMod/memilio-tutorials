@@ -35,14 +35,14 @@ def _(mo):
     mo.md(r"""
     # Introduction
 
-    In this tutorial we will try to infere model parameters based on "real" data. This will allow us to make predictions on the course of an epidemic and suggest appropriate interventions.
+    In this tutorial we try to infer model parameters based on "real" data. This allows us to make predictions on the course of an epidemic and study sets of potential interventions.
 
-    This is the second in a series of three notebooks that will introduce the usage of Approximate Bayesian computation with MEmilio. Having started with a simple ODE model in the first part, we now want to add multiple Age groups to our model.
+    This is the second notebook in a series of three that introduce the usage of Approximate Bayesian computation (ABC) with MEmilio. Having started with a simple ODE model in the first part, we now want to add multiple age groups to our model.
 
-    This is not a tutorial on Approximate Bayesian Computation. For that, we refer to the tutorials of the software we use and the literature. We will just show how to use these tools together with the MEmilio software framework.
+    Note that this is not a tutorial on ABC. For details on ABC, we refer to the tutorials of pyabc and Bayesflow as listed below. Here, we just show how to connect these tools with the MEmilio software framework.
 
-    In the first two tutorials we will use the package [pyabc](https://pyabc.readthedocs.io/en/latest/). It is a package for likelihood-free inference. This is, of course, a bit of overkill for a differentiable ODE model. However, due to the extremely short runtime of the ODE models, they are very well fitted for a tutorial. If you want to use the same methods for our stochastic models, you only need to replace the model (and wait for a bit longer).
-    For the last tutorial we will use [Bayesflow](https://bayesflow.org/main/index.html), a state of the art python library for Bayesian inference with deep learning.
+    In the first two tutorials we use the package [pyabc](https://pyabc.readthedocs.io/en/latest/) for likelihood-free inference. While more suitable approaches might be available for the model considered here, we use a simple model to demonstrate the coupling. For more advanced and stochastic models, you only need to replace the model and accept longer run times.
+    For the last tutorial, we use [Bayesflow](https://bayesflow.org/main/index.html), a state of the art python library for Bayesian inference with deep learning.
     """)
     return
 
@@ -52,7 +52,7 @@ def _(mo):
     mo.md(r"""
     # Model Setup
 
-    We will reuse the model that was already introduced in the last tutorials. It has all the compartments for which we have data available, so we don't need to implement anything from scratch. Let's first import the necessary functions:
+    We will reuse the SECIR-type ODE-based model that was already used in the last tutorials. The model already has all the compartments for which we have data available, so we do not need to implement anything from scratch. Let's first import the necessary functions:
     """)
     return
 
@@ -62,7 +62,7 @@ def _():
     import memilio.simulation.osecir as osecir
     from memilio.simulation import AgeGroup, Damping, LogLevel, set_log_level
     from memilio.simulation import ContactMatrixGroup, ContactMatrix, read_mobility_plain
-    set_log_level(LogLevel.Off)
+    set_log_level(LogLevel.Warning)
     return (
         AgeGroup,
         ContactMatrix,
@@ -75,10 +75,10 @@ def _():
 @app.cell
 def _(mo):
     mo.md(r"""
-    Next, we need a lot of parameters. As we have six different age groups in our data (the standard for data provided by the RKI), the number of unknown parameters is multiplied by six.
+    Next, we need to define the setting and the model parameters. As we have six different age groups in our data (the standard for data provided by the RKI), the number of unknown parameters is multiplied by six.
     The parameters that were already known during the last fitting process are the total population of Germany, day 0 (rose monday proved to be a good guess) and thus the length of the simulation (the last reported day in the data). We should also choose an initial time step, but the ODE solver will use adaptive time steps later on. Previous studys give us good values for the contact rates in Germany, even for different age groups, that we will just reuse here.
 
-    Luckily, our endemic has only been going on for a few weeks and "only" about 200 people died. Unfortunately, however, this implies that there is not a lot of data to fit to. A parameter space of dimension 72 will not be easy to infere, if at all. Thus we need to fall back to use some of the preliminary data that is provided by the RKI and to only infer the values that are relevant to our current research question - how can we implement NPIs in the most efficient way? To do that, we want to know how likely it is for each age group to get hospitalized and how easily they infect other people. Additionally, we need to estimate the parameters around infections without symptoms, as it is too early for big studies to find them. Nevertheless, we can already assume that they are as infectious as people with symptoms.
+    Luckily, our endemic has only been going on for a few weeks and "only" about 200 people died. Unfortunately, however, this implies that there is not a lot of data to fit to. A parameter space of dimension 72 will not be easy to infer, if at all. Thus we need to fall back to use some of the preliminary data that is provided by the RKI and to only infer the values that are relevant to our current research question - how can we implement NPIs in the most efficient way? To do that, we want to know how likely it is for each age group to get hospitalized and how easily they infect other people. Additionally, we need to estimate the parameters around infections without symptoms, as it is too early for big studies to find them. Nevertheless, we can already assume that they are as infectious as people with symptoms.
     All other parameters we will just take from the rough estimates that RKI provides based on observations in the hospitals and surveys of infected individuals.
     """)
     return
@@ -121,7 +121,7 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    As before, setting our parameters will involve a dictionary that is later provided by `pyabc`, but now we will also add a function to set our known parameters.
+    As before, for our unknown paramters we will use a dictionary which serves for sampling random realizations, but now we will also add a function to set our known parameters.
     """)
     return
 
@@ -134,7 +134,6 @@ def _(AgeGroup, num_age_groups):
             model.parameters.TimeInfectedNoSymptoms[group] = parameters[f"TimeInfectedNoSymptoms{index}"]
             model.parameters.TransmissionProbabilityOnContact[group] = parameters[f"TransmissionProbabilityOnContact{index}"]
             model.parameters.RecoveredPerInfectedNoSymptoms[group] = parameters[f"RecoveredPerInfectedNoSymptoms{index}"]
-
 
     return (set_parameters,)
 
@@ -178,7 +177,7 @@ def _(
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    What should we do with the start population? As before, we do not assume the existence of cross-immunity. We also don't know how many people have been initially exposed, but we are pretty sure that they were in Age Group 2 (15 - 35 years old) due to the origin in Kölner Karneval.
+    How should we initialize the population? As before, we do not assume the existence of cross-immunity. We also don't know how many people have been initially exposed, but we are pretty sure that they were in Age Group 2 (15 - 35 years old) due to the origin in Kölner Karneval.
     """)
     return
 
@@ -211,9 +210,9 @@ def _(ContactMatrix, ContactMatrixGroup, os, read_mobility_plain):
     def set_contact_matrices(model):
             contact_matrices = ContactMatrixGroup(1, 6)
             baseline_file = os.path.join(
-                "contact_matrix_baseline.txt")
+                "data/contact_matrix_baseline.txt")
             minimum_file = os.path.join(
-                "contact_matrix_minimum.txt")
+                "data/contact_matrix_minimum.txt")
             # Build a ContactMatrix from baseline and minimum files
             contact_matrices[0] = ContactMatrix(
                 read_mobility_plain(baseline_file),
@@ -227,7 +226,7 @@ def _(ContactMatrix, ContactMatrixGroup, os, read_mobility_plain):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    Now we will combine the code into one function. This is necessary for our fitting process, but it also simplifies testing everything a lot.
+    Now we will combine the code fragments into one function. This is necessary for our fitting process, but it also simplifies testing everything a lot.
     """)
     return
 
@@ -252,19 +251,11 @@ def _(
         set_known_parameters(local_model)
         set_contact_matrices(local_model)
         # Check that the parameters can not be impossible choices like, for example, negative dwelling times
-        local_model.apply_constraints()
+        local_model.check_constraints()
         result = osecir.simulate(t0, tmax, dt, local_model)
         return {"data": osecir.interpolate_simulation_result(result).as_ndarray()}
 
     return (run_simulation,)
-
-
-@app.cell
-def _(mo):
-    mo.md(r"""
-    Why did we choose to return a dictionary instead of just the time series? We will see that in the next chapter:
-    """)
-    return
 
 
 @app.cell(hide_code=True)
@@ -272,7 +263,7 @@ def _(mo):
     mo.md(r"""
     # Fitting Setup
 
-    We decided to use [`pyabc`](https://pyabc.readthedocs.io/en/latest/) for the parameter estimation. It is a well-established tool and maintained by collegues of us, so we get good support😇. In combination with MEmilio, it has for example been used in [this publication](https://doi.org/10.1101/2025.09.25.25336633). We will just introduce its features as needed. For advanced setups, like distributed cluster usage, additional settings, visualizations and examples we refer to the [documentation](https://pyabc.readthedocs.io/en/latest/).
+    We decided to use [`pyABC`](https://pyabc.readthedocs.io/en/latest/), a well-established tool and maintained tool for parameter estimation. In combination with MEmilio, it has for example been used in [this publication](https://doi.org/10.1101/2025.09.25.25336633). We will just introduce its features as needed. For advanced setups, like distributed cluster usage, additional settings, visualizations, and examples we refer to the [documentation](https://pyabc.readthedocs.io/en/latest/).
 
     Here, we first need to import it and load some dependencies.
     """)
@@ -294,11 +285,11 @@ def _(mo):
     mo.md(r"""
     ## Setting up the prior
 
-    Before we can run the inference process, we first of all need a prior. This is a function that provides us with parameter estimates which we then use for simulations which in turn are then evaluated using an objective function.
+    Before we can run the inference process, we first of all need a prior (distribution). This is a distribution over possible parameter values from which we sample candidates, simulate the model, and then evaluate the simulations using an objective function.
 
-    `pyabc` has a function that creates a prior based on given prior distributions for all defined parameters. On sampling, this function outputs a dictionary with the parameter names and values. This fits neatly into our previously defined `run_simulation` function - What a lucky coincidence!
+    `pyABC` has functions that create priors for each parameter based on given distributions. On sampling, this function outputs a dictionary with the parameter names and values. This fits neatly into our previously defined `run_simulation` function - What a lucky coincidence!
 
-    As priors for our parameters we can use everything that is defined as a scipy random distribution. As we don't have any prior knowledge here (for example, life is easier if mean values are known or guessed), we will assume uniform distributions. We should mainly take care that we do not accidently sample implausible values (for example, negative values). This would be catched by our model and "corrected", but then we would simulate with different values than the optimization algorithm beliefs.
+    As priors for our parameters, we can use everything that is defined as a `scipy` random distribution. As we do not have any prior knowledge here, we will assume uniform distributions. Note that life is easier if mean values are known or can be guessed. We should mainly take care that we do not accidentally sample implausible values (for example, negative values). In these cases, the model returns a warning. In order to avoid theses problems, priors should be selected carefully.
     """)
     return
 
@@ -306,22 +297,22 @@ def _(mo):
 @app.cell
 def _(pyabc):
     prior = pyabc.Distribution(
-            TimeInfectedNoSymptoms0 = pyabc.RV("uniform", 0, 2),
+            TimeInfectedNoSymptoms0 = pyabc.RV("uniform", 0.1, 1.9),
             TransmissionProbabilityOnContact0 = pyabc.RV("uniform", 0.01, 0.1),
             RecoveredPerInfectedNoSymptoms0 = pyabc.RV("uniform", 0.1, 0.3),
-            TimeInfectedNoSymptoms1 = pyabc.RV("uniform", 0, 2),
+            TimeInfectedNoSymptoms1 = pyabc.RV("uniform", 0.1, 1.9),
             TransmissionProbabilityOnContact1 = pyabc.RV("uniform", 0.01, 0.1),
             RecoveredPerInfectedNoSymptoms1 = pyabc.RV("uniform", 0.1, 0.3),
-            TimeInfectedNoSymptoms2 = pyabc.RV("uniform", 0, 2),
+            TimeInfectedNoSymptoms2 = pyabc.RV("uniform", 0.1, 1.9),
             TransmissionProbabilityOnContact2 = pyabc.RV("uniform", 0.01, 0.1),
             RecoveredPerInfectedNoSymptoms2 = pyabc.RV("uniform", 0.1, 0.3),
-            TimeInfectedNoSymptoms3 = pyabc.RV("uniform", 0, 2),
+            TimeInfectedNoSymptoms3 = pyabc.RV("uniform", 0.1, 1.9),
             TransmissionProbabilityOnContact3 = pyabc.RV("uniform", 0.01, 0.1),
             RecoveredPerInfectedNoSymptoms3 = pyabc.RV("uniform", 0.1, 0.3),
-            TimeInfectedNoSymptoms4 = pyabc.RV("uniform", 0, 2),
+            TimeInfectedNoSymptoms4 = pyabc.RV("uniform", 0.1, 1.9),
             TransmissionProbabilityOnContact4 = pyabc.RV("uniform", 0.01, 0.1),
             RecoveredPerInfectedNoSymptoms4 = pyabc.RV("uniform", 0.1, 0.3),
-            TimeInfectedNoSymptoms5 = pyabc.RV("uniform", 0, 2),
+            TimeInfectedNoSymptoms5 = pyabc.RV("uniform", 0.1, 1.9),
             TransmissionProbabilityOnContact5 = pyabc.RV("uniform", 0.01, 0.1),
             RecoveredPerInfectedNoSymptoms5 = pyabc.RV("uniform", 0.1, 0.3),
             InitiallyExposed = pyabc.RV("uniform", 1, 200)
@@ -383,7 +374,7 @@ def _(mo):
 
 @app.cell
 def _(pd):
-    observation_data = pd.read_csv("cases_2.csv")
+    observation_data = pd.read_csv("data/cases_2.csv")
     return (observation_data,)
 
 
@@ -430,11 +421,11 @@ def _(mo):
     mo.md(r"""
     # Inference process
 
-    With all the previous work done, there are only four more lines of code needed to run the inference process. First, we need to create the fitting object. It is called `ABCSMC` because we perform the fitting using Approximate Bayesian Computation -Sequential Monte Carlo. The object is created by giving it our simulation function, the prior and the distance. We set the population size to 300. This will reduce the chance of numerical instabilites. There are more possible parameters for which we will just use the defaults. The full documentation is available [here](https://pyabc.readthedocs.io/en/latest/api/pyabc.inference.html#pyabc.inference.ABCSMC).
+    With all the previous work done, there are only four more lines of code needed to run the inference process. First, we need to create the fitting object. It is called `ABCSMC` because we perform the fitting using Approximate Bayesian Computation - Sequential Monte Carlo. The object is created by giving it our simulation function, the prior and the distance. We set the population size to 300. This will reduce the chance of numerical instabilites. There are more possible parameters for which we will just use the defaults. The full documentation is available [here](https://pyabc.readthedocs.io/en/latest/api/pyabc.inference.html#pyabc.inference.ABCSMC).
 
     Then we need to define a database path. `pyabc` stores all simulations in a database. This allows us to take a closer look at them after the inference. However, here we will use a temporary directory to store the database. Once we found that folder, we need to create the database before finally running the inference.
-
-    The inference is automatically parallelized to all available cores. Thus the runtime depends on your machine and may range from a minute up to a long time. You can first of all try to use a `population_size` of 100 or less to check out the runtime. If you encounter issues about the population size being `nan`, just try to create the `abc` object again. If it still doesn't work, try it with a bigger population size.
+    One important question is for how long to run the inference. Here, we will simply set a `max_nr_populations` of 6. Then the inference is stopped once it has optimized for six iterations. While this is not a very good stopping criteria, we use it here to reduce the run time. You are free to replace that by any other stopping criteria as explained in the [pyabc documentation](https://pyabc.readthedocs.io/en/latest/index.html).
+    The inference is automatically parallelized to all available cores. Thus the runtime depends on your machine and may range from a minute up to a 15 minutes.  To test performance, you can start with a `population_size` of 100 or less. If you encounter issues about the population size being `nan`, just try to create the `abc` object again. If it still doesn't work, try it with a bigger population size.
     """)
     return
 
@@ -464,7 +455,7 @@ def _(abc):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    Great, that worked out well. Let's take a look at the evaluation figures by `pyabc`. Here we can see the posterior distributions for the different parameters. We would love to see sharp peaks and narrow tails which would imply a very good identifiability. Rendering the figure takes a few seconds.
+    Great, that worked out well. Let's take a look at the evaluation figures by `pyabc`. Here we can see the posterior distributions for the different parameters.Rendering the figure takes a few seconds.
     """)
     return
 
@@ -580,7 +571,7 @@ def _(
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    This fit looks quite good! Apparently, we can fit to the data well and with reasonable uncertainty. We could probably also improve by running more generations or bigger population sizes.
+    This fit looks okayish! Apparently, we can fit to the data well and with reasonable uncertainty. We could probably also improve by running more generations or bigger population sizes.
 
     Now we need to report our results back to the RKI because we do not want to be the people responsible for specific NPIs... The discussion has already started and some people claim that the inhabitants of specific German regions already restricted themselfes, making further measures unnecessary. Is that true? To investigate this question, we need to fit a model with regional resolution. That will indeed be done in the next tutorial.
     But for now, let's just plot our posteriors and take a break.

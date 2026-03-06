@@ -38,24 +38,19 @@ set(MEMILIO_BUILD_SIMULATIONS OFF)
 
 # Add the subdirectory for MEmilio build.
 add_subdirectory(${memilio_SOURCE_DIR}/cpp ${memilio_BINARY_DIR})
+add_subdirectory(exercises)
 
 add_executable(tutorial_ide tutorial_ide.cpp)
 target_link_libraries(tutorial_ide PRIVATE memilio ide_secir)
 
-add_executable(exercise_ide exercises/exercise_ide.cpp)
-target_link_libraries(exercise_ide PRIVATE memilio ide_secir)
-
 add_executable(tutorial_lct tutorial_lct.cpp)
 target_link_libraries(tutorial_lct PRIVATE memilio lct_secir)
-
-add_executable(exercise_lct exercises/exercise_lct.cpp)
-target_link_libraries(exercise_lct PRIVATE memilio lct_secir)
 
 add_executable(tutorial1 tutorial1.cpp)
 target_link_libraries(tutorial1 PRIVATE memilio ode_secir Boost::filesystem)
 
-add_executable(exercise1 exercises/exercise1.cpp)
-target_link_libraries(exercise1 PRIVATE memilio ode_secir Boost::filesystem)
+add_executable(tutorial2 tutorial2.cpp)
+target_link_libraries(tutorial2 PRIVATE memilio ode_secir Boost::filesystem)
 
 add_executable(tutorial3 tutorial3.cpp)
 target_link_libraries(tutorial3 PRIVATE memilio ode_secir Boost::filesystem)
@@ -74,6 +69,12 @@ target_link_libraries(tutorial7 PRIVATE memilio ode_secir Boost::filesystem)
 
 add_executable(exercise7 exercises/exercise7.cpp)
 target_link_libraries(exercise7 PRIVATE memilio ode_secir Boost::filesystem)
+
+add_executable(tutorial10 tutorial10.cpp)
+target_link_libraries(tutorial10 PRIVATE memilio ode_secir Boost::filesystem)
+
+add_executable(tutorial11 tutorial11.cpp)
+target_link_libraries(tutorial11 PRIVATE memilio ode_secir Boost::filesystem)
 
 add_executable(tutorial12_ensemble_sims tutorial12_ensemble_sims.cpp)
 target_link_libraries(tutorial12_ensemble_sims PRIVATE memilio ode_secir)

@@ -206,6 +206,11 @@ def _(compartments, daily_flows, osecir, plot_time, plt):
     # 2. Flow indices
     new_symptomatic_idx = 2
     new_hospitalized_idx = 6
+    # EXERCISE: Identify the flow index for new ICU admissions
+    # (the flow from InfectedSevere to InfectedCritical).
+    # use the MEmilio documentation:
+    # https://memilio.readthedocs.io/en/latest/cpp/models/osecir.html#flows
+    # new_icu_idx = ???
 
     # 3. Create the plots
     fig, ax = plt.subplots(1, 2, figsize=(14, 6))
@@ -213,6 +218,9 @@ def _(compartments, daily_flows, osecir, plot_time, plt):
     # --- Subplot 1: Disease Progression (The Time Lag) ---
     ax[0].bar(plot_time, daily_flows[new_symptomatic_idx, :], color='coral', alpha=0.5, label='New Symptomatic Cases')
     ax[0].bar(plot_time, daily_flows[new_hospitalized_idx, :], color='darkred', alpha=0.8, label='New Hospitalizations')
+    # EXERCISE: Extend subplot 1 to also show new ICU admissions.
+    # Hint: add a third bar for daily_flows[new_icu_idx, :] with a suitable color and label,
+    # e.g. color='maroon', alpha=0.9, label='New ICU Admissions'.
     ax[0].set_title('Disease Progression: Infection to Hospitalization')
     ax[0].set_xlabel('Time [days]')
     ax[0].set_ylabel('Daily New Cases [#]')
