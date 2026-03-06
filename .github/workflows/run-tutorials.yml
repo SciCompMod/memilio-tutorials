@@ -1,0 +1,67 @@
+name: Run Tutorials
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  run-tutorials:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout tutorials repo
+        uses: actions/checkout@v4
+
+      - name: Clone MEmilio repository
+        run: git clone --depth 1 https://github.com/SciCompMod/memilio.git memilio
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build
+
+      - name: Install memilio-simulation and Python packages
+        run: |
+          uv venv
+          # Install memilio-simulation from the cloned repo (C++ extension, needs cmake/ninja)
+          uv add --dev ./memilio/pycode/memilio-simulation
+          # Install tutorial dependencies
+          uv add marimo matplotlib pandas numpy pyabc[pyarrow] bayesflow tensorflow nbformat
+
+      - name: Run tutorials and export to HTML
+        run: |
+          mkdir -p html_output
+          failed=""
+          for notebook in tutorial*.py; do
+            name=$(basename "${notebook%.py}")
+            echo "::group::Running $notebook"
+            if uv run marimo export html "$notebook" -o "html_output/${name}.html"; then
+              echo "OK: $notebook"
+            else
+              echo "::error::FAILED: $notebook"
+              failed="$failed $notebook"
+            fi
+            echo "::endgroup::"
+          done
+          if [ -n "$failed" ]; then
+            echo "The following notebooks failed:$failed"
+            exit 1
+          fi
+
+      - name: Upload HTML artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tutorial-html
+          path: html_output/
+          retention-days: 30
