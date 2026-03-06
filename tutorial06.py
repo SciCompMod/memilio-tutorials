@@ -441,14 +441,14 @@ def _(
     tempfile,
 ):
     abc = pyabc.ABCSMC(run_simulation, prior, distance_function, population_size=1000)
-    db_path = "sqlite:///" + os.path.join(tempfile.gettempdir(), "tmp8.db")
+    db_path = "sqlite:///" + os.path.join(tempfile.gettempdir(), "tmp.db")
     abc.new(db_path, observation_data)
     return (abc,)
 
 
 @app.cell
 def _(abc):
-    history = abc.run(max_nr_populations = 6, minimum_epsilon=0.05)
+    history = abc.run(max_nr_populations = 6)
     return (history,)
 
 
