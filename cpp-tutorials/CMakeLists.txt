@@ -14,6 +14,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 # Download MEmilio with the git tag defined in git_tag.cmake.
 include(${CMAKE_SOURCE_DIR}/git_tag.cmake)
+
 # If git tag is not set, throw error.
 if(NOT DEFINED GIT_TAG_MEMILIO)
   message(FATAL_ERROR "GIT_TAG_MEMILIO is not defined. Please make sure the git_tag.cmake file is correct.")
@@ -21,7 +22,7 @@ endif()
 
 # FetchContent to fetch the MEmilio library in the correct version.
 include(FetchContent)
-  
+
 FetchContent_Declare(
   memilio
   GIT_REPOSITORY https://github.com/SciCompMod/memilio.git
@@ -41,18 +42,17 @@ add_subdirectory(${memilio_SOURCE_DIR}/cpp ${memilio_BINARY_DIR})
 add_executable(tutorial_ide tutorial_ide.cpp)
 target_link_libraries(tutorial_ide PRIVATE memilio ide_secir)
 
-add_executable(exercise_ide exercise_ide.cpp)
+add_executable(exercise_ide exercises/exercise_ide.cpp)
 target_link_libraries(exercise_ide PRIVATE memilio ide_secir)
 
 add_executable(tutorial_lct tutorial_lct.cpp)
 target_link_libraries(tutorial_lct PRIVATE memilio lct_secir)
 
-add_executable(exercise_lct exercise_lct.cpp)
+add_executable(exercise_lct exercises/exercise_lct.cpp)
 target_link_libraries(exercise_lct PRIVATE memilio lct_secir)
 
 # add_executable(tutorial_abm tutorial_abm_household1.cpp)
 # target_link_libraries(tutorial_abm PRIVATE memilio abm Boost::filesystem)
-
 add_executable(tutorial1 tutorial1.cpp)
 target_link_libraries(tutorial1 PRIVATE memilio ode_secir Boost::filesystem)
 
@@ -67,7 +67,6 @@ target_link_libraries(tutorial7 PRIVATE memilio ode_secir Boost::filesystem)
 
 add_executable(tutorial12_ensemble_sims tutorial12_ensemble_sims.cpp)
 target_link_libraries(tutorial12_ensemble_sims PRIVATE memilio ode_secir)
-
 
 add_executable(tutorial_abm_household abm/tutorial_abm_household1.cpp abm/parameter_setter.cpp)
 target_link_libraries(tutorial_abm_household PRIVATE memilio abm)
