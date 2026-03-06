@@ -21,7 +21,7 @@ def _(mo):
 
     Today, the German federal health authority RKI announced that the recently observed sharp increase in ICU case numbers after acute respiratory infections is due to a new lineage of the influenza virus. It was first sequenced at the university hospital of cologne and thus called Influenza B/Colognia/314/2026. After it's detection, laboratories in the whole of Germany rushed to test stored samples of recent patients s.t. we now have a good overview on the death numbers and numbers of patients in ICUs.
 
-    The oldest sample found was a 80 year old man from Cologne, who died on 2026-02-28. His family reported that he felt sick shortly after excessively celebrating carneval on Rose Monday, which was 2026-02-16 this year.
+    The first patients fell sick shortly after excessively celebrating carneval on Rose Monday, which was 2026-02-16 this year.
 
     The RKI today published all available data and asked for modellers around the world to estimate paramaters and make predictions on the course of the disease.
 

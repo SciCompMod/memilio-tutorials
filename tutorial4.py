@@ -21,7 +21,7 @@ def _(mo):
 
     Today, the German federal health authority RKI announced that the recently observed sharp increase in treatments in intensive care units (ICU) is due to a new lineage of the influenza virus. It was first sequenced at the University Hospital of Cologne and thus called Influenza B/Colognia/314/2026. After it's detection, laboratories in the whole of Germany rushed to test stored samples of recent patients so that we now have a good overview of the death counts and numbers of patients in ICUs.
 
-    The oldest sample found was from an 80-year-old man from Cologne, who died on 2026-02-28. His family reported that he felt sick shortly after excessively celebrating Karneval on Rose Monday, which was 2026-02-16 this year.
+    The oldest sample found in a deceased person was a 50 year old man from Cologne, who died on 2026-03-02. His family reported that he felt sick shortly after excessively celebrating Karneval on Rose Monday, which was 2026-02-16 this year.
 
     The RKI today published all available data and asked modellers around the world to estimate parameters and make predictions on the course of the disease.
     """)
