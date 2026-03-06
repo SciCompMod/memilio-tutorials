@@ -60,7 +60,7 @@ def _():
     import memilio.simulation.osecir as osecir
     from memilio.simulation import AgeGroup, Damping, LogLevel, set_log_level
     # deactivate the log level to avoid warning messages from adaptive step sizing
-    set_log_level(LogLevel.Error)
+    set_log_level(LogLevel.Warning)
     return AgeGroup, LogLevel, osecir, set_log_level
 
 
@@ -170,9 +170,7 @@ def _(
         set_parameters(influenza_model, parameters)
         influenza_model.parameters.ContactPatterns.cont_freq_mat[0].baseline = np.ones((1,1)) * contact_frequency
         # Check that the parameters are meaningful, i.e., no negative dwelling times
-        set_log_level(LogLevel.Warn)
         influenza_model.check_constraints()
-        set_log_level(LogLevel.Off)
 
         result = osecir.simulate(t0, tmax, 0.1, influenza_model)
         return {"data": osecir.interpolate_simulation_result(result).as_ndarray()}
@@ -295,7 +293,7 @@ def _(mo):
 
 @app.cell
 def _(pd):
-    observation_data = pd.read_csv("cases_1.csv")
+    observation_data = pd.read_csv("data/cases_1.csv")
     return (observation_data,)
 
 
@@ -342,7 +340,7 @@ def _(mo):
     mo.md(r"""
     # Inference process
 
-    With all the previous work done, there are only four more lines of code needed to run the inference process. First, we need to create the fitting object. It is called `ABCSMC` because we perform the fitting using Approximate Bayesian Computation -Sequential Monte Carlo. The object is created by giving it our simulation function, the prior and the distance. We set the population size to the somewhat arbitrary value of 400. This will reduce the chance of numerical instabilites. There are more possible parameters for which we will just use the defaults. The full documentation is available [here](https://pyabc.readthedocs.io/en/latest/api/pyabc.inference.html#pyabc.inference.ABCSMC).
+    With all the previous work done, there are only four more lines of code needed to run the inference process. First, we need to create the fitting object. It is called `ABCSMC` because we perform the fitting using Approximate Bayesian Computation - Sequential Monte Carlo. The object is created by giving it our simulation function, the prior and the distance. We set the population size to the somewhat arbitrary value of 400. This will reduce the chance of numerical instabilites. There are more possible parameters for which we will just use the defaults. The full documentation is available [here](https://pyabc.readthedocs.io/en/latest/api/pyabc.inference.html#pyabc.inference.ABCSMC).
 
     Then we need to define a database path. `pyabc` stores all simulations in a database. This allows us to take a closer look at them after the inference. However, here we will use a temporary directory to store the database. Once we have found that folder, we need to create the database before finally running the inference.
 
