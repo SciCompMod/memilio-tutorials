@@ -51,10 +51,11 @@ target_link_libraries(tutorial_lct PRIVATE memilio lct_secir)
 add_executable(exercise_lct exercises/exercise_lct.cpp)
 target_link_libraries(exercise_lct PRIVATE memilio lct_secir)
 
-# add_executable(tutorial_abm tutorial_abm_household1.cpp)
-# target_link_libraries(tutorial_abm PRIVATE memilio abm Boost::filesystem)
 add_executable(tutorial1 tutorial1.cpp)
 target_link_libraries(tutorial1 PRIVATE memilio ode_secir Boost::filesystem)
+
+add_executable(exercise1 exercises/exercise1.cpp)
+target_link_libraries(exercise1 PRIVATE memilio ode_secir Boost::filesystem)
 
 add_executable(tutorial3 tutorial3.cpp)
 target_link_libraries(tutorial3 PRIVATE memilio ode_secir Boost::filesystem)
