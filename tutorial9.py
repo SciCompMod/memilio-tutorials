@@ -619,7 +619,7 @@ def _(np, pd):
                         (the '1' is a batch dimension for workflow.sample)
             data:       np.ndarray of shape (T, 12, 5)
         """
-        df = pd.read_csv("cases_3.csv").to_numpy()  # shape: (T, 60)
+        df = pd.read_csv("data/cases_3.csv").to_numpy()  # shape: (T, 60)
 
         data = np.zeros((df.shape[0], df.shape[1] // 5, 5))
         conditions = {}
