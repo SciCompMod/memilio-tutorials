@@ -86,7 +86,7 @@ void set_world_parameters(mio::abm::Parameters& params)
     params.get<mio::abm::DeathsPerInfectedCritical>()[{mio::abm::VirusVariant::Wildtype, age_group_80_plus}]  = 0.48;
 
     // Set infection parameters
-    params.get<mio::abm::InfectionRateFromViralShed>()[{mio::abm::VirusVariant::Wildtype}] = 100.0;
+    params.get<mio::abm::InfectionRateFromViralShed>()[{mio::abm::VirusVariant::Wildtype}] = 5.0;
     params.get<mio::abm::AerosolTransmissionRates>()                                    = 0.0;
 }
 

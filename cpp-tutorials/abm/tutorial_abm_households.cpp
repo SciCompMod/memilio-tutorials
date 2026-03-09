@@ -1,7 +1,7 @@
 /*
 * Copyright (C) 2020-2026 MEmilio
 *
-* Authors: Khoa Nguyen
+* Authors: Sascha Korf
 *
 * Contact: Martin J. Kuehn <Martin.Kuehn@DLR.de>
 *
@@ -19,24 +19,27 @@
 */
 
 /**
- * @file tutorial_abm_household1.cpp
- * @brief Tutorial 1: Setting up an ABM model with household data.
+ * @file tutorial_abm_households.cpp
+ * @brief ABM Tutorial 1: Setting up an agent-based model with households.
+ *
+ * MEmilio provides an agent-based model (ABM) where each individual ("agent")
+ * has an age, a home, and assigned locations they visit during the day.
+ * Agents transition between infection states (Susceptible, Exposed, ..., Dead)
+ * based on stochastic contact events at their current location.
  *
  * This tutorial demonstrates how to:
- *  1. Define age groups and model parameters.
+ *  1. Define age groups and configure model parameters.
  *  2. Create HouseholdMember types with weighted age distributions.
- *  3. Compose Household templates from HouseholdMember types.
- *  4. Group Household templates into HouseholdGroups and add them to the model.
- *  5. Add and configure locations (school, work, shop, etc.).
- *  6. Assign initial infection states and locations to persons.
- *  7. Run a short simulation and write the results to a file.
+ *  3. Compose Household templates and add them to the model.
+ *  4. Add locations (school, work, shop, hospital, etc.).
+ *  5. Assign initial infection states and locations to persons.
+ *  6. Run a 30-day simulation and write the results.
  *
- * Key concept – HouseholdMember age weights:
+ * Key concept -- HouseholdMember age weights:
  *   Each HouseholdMember carries an integer weight for every AgeGroup.
  *   When a person is created for that member slot, the model draws its age
  *   from a discrete distribution proportional to these weights.
- *   Example: weights {1, 1, 0, 0} give a 50 / 50 chance of AgeGroup 0 or 1.
- *   Weights {0, 0, 1, 2} give a 1/3 chance of AgeGroup 2 and 2/3 of AgeGroup 3.
+ *   Example: weights {1, 1, 0, 0} give a 50/50 chance of AgeGroup 0 or 1.
  */
 
 #include "abm/household.h"
@@ -45,19 +48,27 @@
 #include "abm/common_abm_loggers.h"
 #include "parameter_setter.h"
 
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 
-int main()
+int main(int argc, char* argv[])
 {
+    // Usage: tutorial_abm_household [n_households] [infected_frac] [sim_days]
+    //   n_households  : number of each household type          (default: 125)
+    //   infected_frac : fraction initially infected             (default: 0.2)
+    //   sim_days      : simulation duration in days             (default: 30)
+    int    arg_n_households  = (argc > 1) ? std::atoi(argv[1]) : 125;
+    double arg_infected_frac = (argc > 2) ? std::atof(argv[2]) : 0.2;
+    int    arg_sim_days      = (argc > 3) ? std::atoi(argv[3]) : 30;
+
+    // Suppress verbose log output; only warnings and errors are shown.
     mio::set_log_level(mio::LogLevel::warn);
 
-    // -------------------------------------------------------------------------
-    // 1. Age groups
-    // -------------------------------------------------------------------------
-    // We use six age groups covering children and adults younger than 60.
-    // The index passed to mio::AgeGroup must match the order in which the model
-    // was constructed (0-based).
+    // *** Define age groups. ***
+    // The ABM supports multiple age groups. Each person is assigned to exactly
+    // one group when created. The number and meaning of groups must be
+    // consistent throughout the entire setup.
     size_t num_age_groups         = 6;
     const auto age_group_0_to_4   = mio::AgeGroup(0); // toddlers / kindergarten
     const auto age_group_5_to_14  = mio::AgeGroup(1); // school children
@@ -66,9 +77,11 @@ int main()
     const auto age_group_60_to_79 = mio::AgeGroup(4); // seniors
     const auto age_group_80_plus  = mio::AgeGroup(5); // elderly
 
-    // -------------------------------------------------------------------------
-    // 2. Model and global infection parameters
-    // -------------------------------------------------------------------------
+    // *** Create the model and set infection parameters. ***
+    // The Model holds all persons, locations, and parameters. We pass in the
+    // number of age groups so that all parameter arrays are sized correctly.
+    // `set_local_parameters` and `set_world_parameters` fill in realistic
+    // epidemiological values (see parameter_setter.h).
     auto model = mio::abm::Model(num_age_groups);
     set_local_parameters(model);
     set_world_parameters(model.parameters);
@@ -83,13 +96,10 @@ int main()
         {age_group_15_to_34, age_group_35_to_59}, true);
 
 
-    // -------------------------------------------------------------------------
-    // 3. HouseholdMember types
-    // -------------------------------------------------------------------------
+    // *** Define HouseholdMember types. ***
     // A HouseholdMember is not a person itself; it is a *template* that
-    // describes the age distribution of whoever fills that role in a household.
-    // The weights are integers; the probability of each age group is
-    //   P(AgeGroup i) = weight_i / sum_of_all_weights.
+    // describes the age distribution of whoever fills that role.
+    // The probability of each age group is P(i) = weight_i / sum_of_weights.
 
     // child: equally likely to be 0-4 or 5-14 years old (weights 1 and 1).
     auto child = mio::abm::HouseholdMember(num_age_groups);
@@ -106,17 +116,21 @@ int main()
     auto single_adult = mio::abm::HouseholdMember(num_age_groups);
     single_adult.set_age_weight(age_group_35_to_59, 1);
 
+    // senior: equally likely to be 60-79 or 80+ years old.
     auto senior_adult = mio::abm::HouseholdMember(num_age_groups);
     senior_adult.set_age_weight(age_group_60_to_79, 1);
     senior_adult.set_age_weight(age_group_80_plus, 1);
 
-    // -------------------------------------------------------------------------
-    // 4. Household templates and HouseholdGroups
-    // -------------------------------------------------------------------------
-    // A Household collects one or more (member_type, count) pairs.
-    // set_space_per_member sets the volume per person in m³, which affects
-    // aerosol transmission when UseLocationCapacityForTransmissions is true.
-    int n_households = 125; // number of each household type to add to the model
+    // *** Compose households and add them to the model. ***
+    // A Household collects (member_type, count) pairs. A HouseholdGroup bundles
+    // many copies of a Household template. `add_household_group_to_model`
+    // creates the actual persons and their home locations.
+    //
+    // CLI parameters (see usage at top of main):
+    //   argv[1] = n_households       (population size: 50, 125, 500)
+    //   argv[2] = infected_frac      (initial infected fraction: 0.05, 0.2, 0.5)
+    //   argv[3] = sim_days           (simulation duration: 15, 30, 90)
+    int n_households = arg_n_households;
 
     // --- Type A: two-person household (1 parent + 1 child) -------------------
     auto twoPersonHousehold = mio::abm::Household();
@@ -150,14 +164,10 @@ int main()
     seniorAdultGroup.add_households(seniorAdultHousehold, n_households);
     add_household_group_to_model(model, seniorAdultGroup);
 
-    // -------------------------------------------------------------------------
-    // 5. Locations
-    // -------------------------------------------------------------------------
-    // Locations are added one at a time.  The returned LocationId is used later
-    // to assign persons and to read infection parameters.
-    // MaximumContacts caps the total contact rate at a location: if the sum of
-    // all ContactRates entries exceeds this value, every rate is scaled down
-    // proportionally (see adjust_contact_rates in model_functions.cpp).
+    // *** Add locations. ***
+    // Besides their home (created automatically above), persons need places to
+    // visit: a hospital, an ICU, a social event venue, a shop, a school, and
+    // a workplace. The returned LocationId is used to assign persons later.
 
 
     // One hospital and one ICU shared by all persons.
@@ -177,13 +187,10 @@ int main()
     auto work = model.add_location(mio::abm::LocationType::Work);
 
 
-    // -------------------------------------------------------------------------
-    // 6. Initial infection states
-    // -------------------------------------------------------------------------
-    // We assign each person a random infection state drawn from the discrete
-    // distribution below.  Persons who are not Susceptible receive a full
-    // Infection object so their viral-load course and state transitions are
-    // properly initialised.
+    // *** Assign initial infection states. ***
+    // Each person draws a random infection state from the distribution below.
+    // Persons who are not Susceptible receive a full Infection object so their
+    // viral-load course and state transitions are properly initialised.
     //
     //  Index | InfectionState          | Probability
     //  ------|-------------------------|------------
@@ -197,7 +204,11 @@ int main()
     //    7   | Dead                    | 0.06
     auto start_date = mio::abm::TimePoint(0); // t = 0 s from the simulation epoch
 
-    std::vector<ScalarType> infection_distribution{0.8, 0.05, 0.1, 0.05, 0.00, 0.00, 0.0, 0.00};
+    // Build infection distribution from the infected fraction.
+    // The non-susceptible portion is split: 25% Exposed, 50% I_NS, 25% I_Sy.
+    const double f = arg_infected_frac;
+    std::vector<ScalarType> infection_distribution{
+        1.0 - f, f * 0.25, f * 0.50, f * 0.25, 0.0, 0.0, 0.0, 0.0};
 
     for (auto& person : model.get_persons()) {
         // Draw an infection state from the distribution above.
@@ -215,13 +226,10 @@ int main()
         }
     }
 
-    // -------------------------------------------------------------------------
-    // 7. Location assignment
-    // -------------------------------------------------------------------------
-    // Every person must be assigned to at least: their home (done automatically
-    // by add_household_to_model), a shop, a social-event venue, a hospital, and
-    // an ICU.  School-age children also need a school; working adults need a
-    // workplace.  The model's mobility rules then move persons between their
+    // *** Assign locations to persons. ***
+    // Every person must be assigned to at least a shop, social event venue,
+    // hospital, and ICU. School-age children get a school; working-age adults
+    // get a workplace. The mobility rules then move persons between their
     // assigned locations according to the time of day.
     for (auto& person : model.get_persons()) {
         const auto id = person.get_id();
@@ -242,27 +250,20 @@ int main()
         }
     }
 
-    // -------------------------------------------------------------------------
-    // 8. Run the simulation
-    // -------------------------------------------------------------------------
+    // *** Run the simulation. ***
+    // We simulate 30 days. The Simulation object takes ownership of the model.
+    // A History logger records the number of persons in each InfectionState
+    // at every time step.
     auto t0   = mio::abm::TimePoint(0);
-    auto tmax = t0 + mio::abm::days(30);
+    auto tmax = t0 + mio::abm::days(arg_sim_days);
     auto sim  = mio::abm::Simulation(t0, std::move(model));
 
-    // The History object accumulates one time-series entry per simulation step.
-    // LogInfectionState counts persons in each InfectionState across all
-    // locations at every logged time point.
     mio::History<mio::abm::TimeSeriesWriter, mio::abm::LogInfectionState> historyTimeSeries{
         Eigen::Index(mio::abm::InfectionState::Count)};
 
     sim.advance(tmax, historyTimeSeries);
 
-    // -------------------------------------------------------------------------
-    // 9. Write results
-    // -------------------------------------------------------------------------
-    // The output file contains a table with 9 columns:
-    //   Time  S  E  I_NS  I_Sy  I_Sev  I_Crit  R  D
-    // where Time is in days and the remaining columns are person counts.
+    // *** Write results to file. ***
     std::ofstream outfile("abm_household.txt");
     std::get<0>(historyTimeSeries.get_log())
         .print_table(outfile,

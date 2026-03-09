@@ -1,7 +1,7 @@
 /*
 * Copyright (C) 2020-2026 MEmilio
 *
-* Authors: Khoa Nguyen
+* Authors: Sascha Korf
 *
 * Contact: Martin J. Kuehn <Martin.Kuehn@DLR.de>
 *
@@ -19,24 +19,27 @@
 */
 
 /**
- * @file tutorial_abm_household1.cpp
- * @brief Tutorial 1: Setting up an ABM model with household data.
+ * @file tutorial_abm_testing.cpp
+ * @brief ABM Tutorial 2: Adding testing strategies as non-pharmaceutical interventions.
+ *
+ * This tutorial builds on Tutorial 1 (households) and adds a testing strategy
+ * that acts as a non-pharmaceutical intervention (NPI). When persons enter
+ * certain location types, they are tested with a given probability. Positive
+ * tests cause the person to isolate, reducing transmission.
  *
  * This tutorial demonstrates how to:
- *  1. Define age groups and model parameters.
- *  2. Create HouseholdMember types with weighted age distributions.
- *  3. Compose Household templates from HouseholdMember types.
- *  4. Group Household templates into HouseholdGroups and add them to the model.
- *  5. Add and configure locations (school, work, shop, etc.).
- *  6. Assign initial infection states and locations to persons.
- *  7. Run a short simulation and write the results to a file.
+ *  1. Set up the same household-based model from Tutorial 1.
+ *  2. Create multiple social-event venues (spreading contacts).
+ *  3. Define a TestingScheme with PCR test parameters.
+ *  4. Attach the scheme to location types via a TestingStrategy.
+ *  5. Run the simulation and compare results with the no-testing baseline.
  *
- * Key concept – HouseholdMember age weights:
- *   Each HouseholdMember carries an integer weight for every AgeGroup.
- *   When a person is created for that member slot, the model draws its age
- *   from a discrete distribution proportional to these weights.
- *   Example: weights {1, 1, 0, 0} give a 50 / 50 chance of AgeGroup 0 or 1.
- *   Weights {0, 0, 1, 2} give a 1/3 chance of AgeGroup 2 and 2/3 of AgeGroup 3.
+ * Key concept -- Testing in MEmilio ABM:
+ *   A TestingCriteria specifies which age groups and infection states trigger
+ *   a test. A TestingScheme wraps the criteria together with test parameters
+ *   (sensitivity, specificity via TestData), validity period, active time
+ *   window, and testing probability. Schemes are added to location types
+ *   through the model's TestingStrategy.
  */
 
 #include "abm/household.h"
@@ -45,57 +48,81 @@
 #include "abm/common_abm_loggers.h"
 #include "parameter_setter.h"
 
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
-const auto age_group_0_to_4   = mio::AgeGroup(0); // toddlers / kindergarten
-const auto age_group_5_to_14  = mio::AgeGroup(1); // school children
-const auto age_group_15_to_34 = mio::AgeGroup(2); // young adults
-const auto age_group_35_to_59 = mio::AgeGroup(3); // middle-aged adults
-const auto age_group_60_to_79 = mio::AgeGroup(4); // seniors
-const auto age_group_80_plus  = mio::AgeGroup(5); // elderly
 
-void add_npi_testing_strategies_to_world(mio::abm::Model& model)
+// Age group constants used by both the testing helper and main().
+const auto age_group_0_to_4   = mio::AgeGroup(0);
+const auto age_group_5_to_14  = mio::AgeGroup(1);
+const auto age_group_15_to_34 = mio::AgeGroup(2);
+const auto age_group_35_to_59 = mio::AgeGroup(3);
+const auto age_group_60_to_79 = mio::AgeGroup(4);
+const auto age_group_80_plus  = mio::AgeGroup(5);
+
+// *** Set up a PCR testing strategy and attach it to public locations. ***
+// This function creates a single TestingScheme that:
+//   - Uses a PCR test (sensitivity/specificity come from TestData defaults).
+//   - Applies to all age groups except school children (5-14).
+//   - Targets persons in any infected state (Exposed through Critical).
+//   - Is active for the full 30-day simulation window.
+//   - Tests with 100 % probability upon entry.
+//   - Has a 3-day validity (a negative result exempts retesting for 3 days).
+void add_npi_testing_strategies_to_world(mio::abm::Model& model,
+                                          double testing_probability,
+                                          int validity_days)
 {
-    double testing_probability        = 0.0; // 50% of eligible persons will be tested at each time step
-    auto start_date_test              = mio::abm::TimePoint(mio::abm::days(0).seconds());
-    auto end_date_test                =  mio::abm::TimePoint(mio::abm::days(99999).seconds());
+    auto start_date_test = mio::abm::TimePoint(mio::abm::days(0).seconds());
+    auto end_date_test   = mio::abm::TimePoint(mio::abm::days(30).seconds());
 
-    auto antigen_test = mio::abm::TestType::PCR;
-    auto antigen_test_parameters =
-        model.parameters.get<mio::abm::TestData>()[antigen_test]; // Test parameters
-    auto validity     = mio::abm::days(1);
-    auto states_to_test  = std::vector<mio::abm::InfectionState>{mio::abm::InfectionState::InfectedSymptoms,
-                                                                        mio::abm::InfectionState::InfectedNoSymptoms,   
-                                                                      mio::abm::InfectionState::InfectedSevere,
-                                                                      mio::abm::InfectionState::InfectedCritical};
+    // Retrieve built-in PCR test parameters (sensitivity, specificity, etc.).
+    auto pcr_test = mio::abm::TestType::PCR;
+    auto pcr_test_parameters =
+        model.parameters.get<mio::abm::TestData>()[pcr_test];
+    auto validity = mio::abm::days(validity_days);
 
-    auto ages_to_test = std::vector<mio::AgeGroup>{age_group_0_to_4, age_group_15_to_34, age_group_35_to_59, age_group_60_to_79, age_group_80_plus};
+    // Infection states that should trigger a test.
+    auto states_to_test = std::vector<mio::abm::InfectionState>{
+        mio::abm::InfectionState::InfectedSymptoms,
+        mio::abm::InfectionState::Exposed,
+        mio::abm::InfectionState::InfectedNoSymptoms,
+        mio::abm::InfectionState::InfectedSevere,
+        mio::abm::InfectionState::InfectedCritical};
+
+    // Age groups subject to testing (all except school children 5-14).
+    auto ages_to_test = std::vector<mio::AgeGroup>{
+        age_group_0_to_4, age_group_15_to_34, age_group_35_to_59,
+        age_group_60_to_79, age_group_80_plus};
+
     auto testing_criteria = mio::abm::TestingCriteria(ages_to_test, states_to_test);
-    auto testing_scheme = mio::abm::TestingScheme(testing_criteria, validity, start_date_test, end_date_test, antigen_test_parameters, testing_probability);
+    auto testing_scheme   = mio::abm::TestingScheme(
+        testing_criteria, validity, start_date_test, end_date_test,
+        pcr_test_parameters, testing_probability);
 
-    // social events
+    // Attach the scheme to all public location types.
     model.get_testing_strategy().add_scheme(mio::abm::LocationType::SocialEvent, testing_scheme);
     model.get_testing_strategy().add_scheme(mio::abm::LocationType::School, testing_scheme);
     model.get_testing_strategy().add_scheme(mio::abm::LocationType::Work, testing_scheme);
     model.get_testing_strategy().add_scheme(mio::abm::LocationType::BasicsShop, testing_scheme);
 }
 
-int main()
+int main(int argc, char* argv[])
 {
+    // Usage: tutorial_abm_tests [testing_prob] [validity_days] [n_households]
+    //   testing_prob  : probability of testing at location entry (default: 1.0)
+    //   validity_days : days a negative test stays valid         (default: 3)
+    //   n_households  : number of each household type            (default: 125)
+    double arg_testing_prob  = (argc > 1) ? std::atof(argv[1]) : 1.0;
+    int    arg_validity_days = (argc > 2) ? std::atoi(argv[2]) : 3;
+    int    arg_n_households  = (argc > 3) ? std::atoi(argv[3]) : 125;
+
+    // Suppress verbose log output; only warnings and errors are shown.
     mio::set_log_level(mio::LogLevel::warn);
 
-    // -------------------------------------------------------------------------
-    // 1. Age groups
-    // -------------------------------------------------------------------------
-    // We use six age groups covering children and adults younger than 60.
-    // The index passed to mio::AgeGroup must match the order in which the model
-    // was constructed (0-based).
-    size_t num_age_groups         = 6;
+    // *** Define age groups. ***
+    size_t num_age_groups = 6;
 
-
-    // -------------------------------------------------------------------------
-    // 2. Model and global infection parameters
-    // -------------------------------------------------------------------------
+    // *** Create the model and set infection parameters. ***
     auto model = mio::abm::Model(num_age_groups);
     set_local_parameters(model);
     set_world_parameters(model.parameters);
@@ -109,13 +136,12 @@ int main()
     model.parameters.get<mio::abm::AgeGroupGotoWork>().set_multiple(
         {age_group_15_to_34, age_group_35_to_59}, true);
 
-    // -------------------------------------------------------------------------
-    // 3. HouseholdMember types
-    // -------------------------------------------------------------------------
-    // A HouseholdMember is not a person itself; it is a *template* that
-    // describes the age distribution of whoever fills that role in a household.
-    // The weights are integers; the probability of each age group is
-    //   P(AgeGroup i) = weight_i / sum_of_all_weights.
+    // *** Define HouseholdMember types (same as Tutorial 1). ***
+    //
+    // CLI parameters (see usage at top of main):
+    //   argv[1] = testing_prob       (0.0 = no testing, 1.0 = always test)
+    //   argv[2] = validity_days      (test validity period: 1, 3, 7)
+    //   argv[3] = n_households        (population size: 50, 125, 500)
 
     // child: equally likely to be 0-4 or 5-14 years old (weights 1 and 1).
     auto child = mio::abm::HouseholdMember(num_age_groups);
@@ -136,13 +162,8 @@ int main()
     senior_adult.set_age_weight(age_group_60_to_79, 1);
     senior_adult.set_age_weight(age_group_80_plus, 1);
 
-    // -------------------------------------------------------------------------
-    // 4. Household templates and HouseholdGroups
-    // -------------------------------------------------------------------------
-    // A Household collects one or more (member_type, count) pairs.
-    // set_space_per_member sets the volume per person in m³, which affects
-    // aerosol transmission when UseLocationCapacityForTransmissions is true.
-    int n_households = 125; // number of each household type to add to the model
+    // *** Compose households and add them to the model. ***
+    int n_households = arg_n_households;
 
     // --- Type A: two-person household (1 parent + 1 child) -------------------
     auto twoPersonHousehold = mio::abm::Household();
@@ -176,14 +197,10 @@ int main()
     seniorAdultGroup.add_households(seniorAdultHousehold, n_households);
     add_household_group_to_model(model, seniorAdultGroup);
 
-    // -------------------------------------------------------------------------
-    // 5. Locations
-    // -------------------------------------------------------------------------
-    // Locations are added one at a time.  The returned LocationId is used later
-    // to assign persons and to read infection parameters.
-    // MaximumContacts caps the total contact rate at a location: if the sum of
-    // all ContactRates entries exceeds this value, every rate is scaled down
-    // proportionally (see adjust_contact_rates in model_functions.cpp).
+    // *** Add locations. ***
+    // Compared to Tutorial 1, we now create 10 social-event venues instead of
+    // one. This distributes contacts across venues and makes the testing
+    // strategy more realistic.
 
 
     // One hospital and one ICU shared by all persons.
@@ -196,23 +213,17 @@ int main()
         social_event_venues.push_back(model.add_location(mio::abm::LocationType::SocialEvent));
     }
     
-    // // One supermarket.  Groceries shops allow up to 20 simultaneous contacts.
+    // One supermarket.
     auto shop = model.add_location(mio::abm::LocationType::BasicsShop);
 
     // One school for all school-age children.
     auto school = model.add_location(mio::abm::LocationType::School);
 
-    // // One workplace for all working adults.
+    // One workplace for all working adults.
     auto work = model.add_location(mio::abm::LocationType::Work);
 
 
-    // -------------------------------------------------------------------------
-    // 6. Initial infection states
-    // -------------------------------------------------------------------------
-    // We assign each person a random infection state drawn from the discrete
-    // distribution below.  Persons who are not Susceptible receive a full
-    // Infection object so their viral-load course and state transitions are
-    // properly initialised.
+    // *** Assign initial infection states. ***
     //
     //  Index | InfectionState          | Probability
     //  ------|-------------------------|------------
@@ -226,7 +237,7 @@ int main()
     //    7   | Dead                    | 0.06
     auto start_date = mio::abm::TimePoint(0); // t = 0 s from the simulation epoch
 
-    std::vector<ScalarType> infection_distribution{0.8, 0.05, 0.1, 0.05, 0.00, 0.00, 0.0, 0.00};
+    std::vector<ScalarType> infection_distribution{0.8, 0.05, 0.1, 0.05, 0.00, 0.00, 0.00, 0.00};
 
     for (auto& person : model.get_persons()) {
         // Draw an infection state from the distribution above.
@@ -244,23 +255,16 @@ int main()
         }
     }
 
-    // -------------------------------------------------------------------------
-    // 7. Location assignment
-    // -------------------------------------------------------------------------
-    // Every person must be assigned to at least: their home (done automatically
-    // by add_household_to_model), a shop, a social-event venue, a hospital, and
-    // an ICU.  School-age children also need a school; working adults need a
-    // workplace.  The model's mobility rules then move persons between their
-    // assigned locations according to the time of day.
+    // *** Assign locations to persons. ***
     for (auto& person : model.get_persons()) {
         const auto id = person.get_id();
 
-        // Shared locations – everyone has access to these.
+        // Shared locations.
         model.assign_location(id, shop);
         model.assign_location(id, hospital);
         model.assign_location(id, icu);
 
-        // // Each person is assigned to one of the 10 social event venues at random.
+        // Each person is assigned to one of the 10 social event venues.
         model.assign_location(id, social_event_venues[person.get_id().get() % social_event_venues.size()]);
 
 
@@ -274,39 +278,29 @@ int main()
         }
     }
 
-    // -------------------------------------------------------------------------
-    // 7.5 Add teting strategies
-    // -------------------------------------------------------------------------
-    add_npi_testing_strategies_to_world(model); 
+    // *** Add testing strategies. ***
+    // This is the key addition compared to Tutorial 1. The helper function
+    // defined above attaches a PCR testing scheme to social events, school,
+    // work, and shops. Persons who test positive will isolate at home.
+    add_npi_testing_strategies_to_world(model, arg_testing_prob, arg_validity_days);
 
-    // -------------------------------------------------------------------------
-    // 8. Run the simulation
-    // -------------------------------------------------------------------------
+    // *** Run the simulation. ***
     auto t0   = mio::abm::TimePoint(0);
-    auto tmax = t0 + mio::abm::days(10);
+    auto tmax = t0 + mio::abm::days(30);
     auto sim  = mio::abm::Simulation(t0, std::move(model));
 
-    // The History object accumulates one time-series entry per simulation step.
-    // LogInfectionState counts persons in each InfectionState across all
-    // locations at every logged time point.
     mio::History<mio::abm::TimeSeriesWriter, mio::abm::LogInfectionState> historyTimeSeries{
         Eigen::Index(mio::abm::InfectionState::Count)};
 
     sim.advance(tmax, historyTimeSeries);
-    // sim.advance(tmax);
 
-    // -------------------------------------------------------------------------
-    // 9. Write results
-    // -------------------------------------------------------------------------
-    // The output file contains a table with 9 columns:
-    //   Time  S  E  I_NS  I_Sy  I_Sev  I_Crit  R  D
-    // where Time is in days and the remaining columns are person counts.
-    std::ofstream outfile("abm_household.txt");
+    // *** Write results to file. ***
+    std::ofstream outfile("abm_tests.txt");
     std::get<0>(historyTimeSeries.get_log())
         .print_table(outfile,
                      {"S", "E", "I_NS", "I_Sy", "I_Sev", "I_Crit", "R", "D"},
                      7, 4);
-    std::cout << "Results written to abm_household.txt\n";
+    std::cout << "Results written to abm_tests.txt\n";
 
     return 0;
 }

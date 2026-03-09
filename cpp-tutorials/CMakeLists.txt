@@ -79,11 +79,11 @@ target_link_libraries(tutorial11 PRIVATE memilio ode_secir Boost::filesystem)
 add_executable(tutorial12_ensemble_sims tutorial12_ensemble_sims.cpp)
 target_link_libraries(tutorial12_ensemble_sims PRIVATE memilio ode_secir)
 
-add_executable(tutorial_abm_household abm/tutorial_abm_household1.cpp abm/parameter_setter.cpp)
+add_executable(tutorial_abm_household abm/tutorial_abm_households.cpp abm/parameter_setter.cpp)
 target_link_libraries(tutorial_abm_household PRIVATE memilio abm)
 
-add_executable(tutorial_abm_tests abm/tutorial_abm_testing2.cpp abm/parameter_setter.cpp)
+add_executable(tutorial_abm_tests abm/tutorial_abm_testing.cpp abm/parameter_setter.cpp)
 target_link_libraries(tutorial_abm_tests PRIVATE memilio abm)
 
-add_executable(tutorial_abm_vaccination abm/tutorial_abm_vacc3.cpp abm/parameter_setter.cpp)
+add_executable(tutorial_abm_vaccination abm/tutorial_abm_vaccination.cpp abm/parameter_setter.cpp)
 target_link_libraries(tutorial_abm_vaccination PRIVATE memilio abm)
