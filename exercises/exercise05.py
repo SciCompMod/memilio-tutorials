@@ -238,6 +238,19 @@ def _(osecir, plt, result):
 @app.cell
 def _(mo):
     mo.md(r"""
+    ## Try yourself
+
+    Now you can explore an age-resolved SECIR-model yourself. Examples what you can do are:
+
+    - **Even more age groups**: Initialize a model with 5 (age) groups with each group having a 2 times higher risk of dying from critical infection than the group before.
+    - **Age-dependent contact rates**: How can you include varying contact rates between age groups? Increase the contact rate within age group 1 and between age group 1 and 2.
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
     So far, we only considered one homogeneously mixed population. However, disease spread is often influenced by regional patterns resulting in spatial heterogeneity among the distribution of infections. To include spatial resolution, MEmilio's ODE-based Graph-Metapopulation Model can be used. This is further explained in the next tutorial.
     """)
     return

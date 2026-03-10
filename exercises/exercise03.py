@@ -105,7 +105,7 @@ def _():
 @app.cell
 def _(mo):
     mo.md(r"""
-    After the model initialization, we add a contact reduction (`Damping`) that represents an NPI like e.g. mask wearing or social distancing. Dampings are a factor applied to the contact frequency and can be added to the model at fixed simulation time points before simulating. They have a *Level* and a *Type*. A damping with a given level and type replaces the previously active one with the same level and type, while all currently active dampings of one level and different types are summed up. If two dampings have different levels (independent of the type) they are combined multiplicatively. In the following we apply a `Damping` of 0.9 after 10 days and another damping of 0.6 after 20 days which means that the contacts are reduced by 10% and 40%, respectively. In general, it is also possible to increase the contact rate by using negative Damping values. To always retain a minimum level of contacts, a minimum contact frequency can be set that is never deceeded. In our example we set this minimum contact rate to 0.
+    After the model initialization, we add a contact reduction (`Damping`) that represents an NPI like e.g. mask wearing or social distancing. Dampings are a factor applied to the contact frequency and can be added to the model at fixed simulation time points before simulating. They have a *Level* and a *Type*. A damping with a given level and type replaces the previously active one with the same level and type, while all currently active dampings of one level and different types are summed up. If two dampings have different levels (independent of the type) they are combined multiplicatively. In the following we apply a `Damping` of 0.9 after 10 days and another damping of 0.6 after 20 days which means that the contacts are reduced by 10% and 40%, respectively. In general, it is also possible to increase the contact rate by using Damping values greater than 1. To always retain a minimum level of contacts, a minimum contact frequency can be set that is never deceeded. In our example we set this minimum contact rate to 0.
     """)
     return
 
@@ -217,6 +217,19 @@ def _(osecir, plt, result):
     ax.set_ylabel('Individuals [#]')
     ax.legend()
     plt.show()
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ## Try yourself
+
+    After having learned how to use dampings, you can now try out yourself. Some suggestions what you can try are:
+
+    - **Lifting non-pharmaceutical interventions (NPIs)**: Can you temporarily implement an NPI and lift it again after 2 weeks?
+    - **Increasing contact rates**: Increase the contact rate after 20 days. What does this do to the simulated disease spread?
+    """)
     return
 
 

@@ -318,6 +318,20 @@ def _(osecir, plt, result):
 @app.cell
 def _(mo):
     mo.md(r"""
+    ## Try yourself
+
+    You have seen how to set up and run MEmilio's ODE-SECIR model. You can now explore the model yourself. Here are some suggestions what you can do:
+
+    - **Controlling the transmission process**: What happens if you modify the transmission probability or the contact frequency in the same way?
+    - **Diseases with severe courses**: Increase the proportion of severe or critical cases. What happens to the number of deaths?
+    - **Asymptomatic courses**: How does disease dynamics behave if we only have pre-symptomatic and no asymptomatic cases? What happens if we increase the average time in the non-symptomatic state?
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
     ## Summary and next steps
 
     In the simulated scenario, ~90% of the population got infected within the simulated time frame of 100 days. In a real pandemic, non-pharmaceutical interventions (NPIS) can be implemented to prevent an outbreak from occurring or mitigate its strength. For instance, these include mask wearing or physical distancing which aims at decreasing the effective contacts and hence the infection risk. NPIs can be realized in MEmilio's (ODE-based) models through applying `Dampings`. How to do that will be shown in Tutorial 3. In Tutorial 2, we show how to extract information on daily new infections or hospitalizations through MEmilio's built-in flow formulation.
