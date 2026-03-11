@@ -21,9 +21,11 @@ def _(mo):
 
     Today, the German federal health authority RKI announced that the recently observed sharp increase in ICU case numbers following acute respiratory infections is caused by a new lineage of the influenza virus. It was first sequenced at the University Hospital of Cologne and has consequently been named *Influenza B/Colognia/314/2026*. Following its detection, laboratories across Germany rushed to test stored samples from recent patients, giving us a reasonably complete picture of ICU admissions and deaths to date.
 
-    The oldest sample identified came from an 80-year-old man from Cologne who died on 2026-02-29. His family reported that he first felt ill shortly after excessively celebrating Carnival on Rose Monday, which fell on 2026-02-16 this year.
+    The oldest sample identified came from an 50-year-old man from Cologne who died on 2026-03-02. His family reported that he first felt ill shortly after excessively celebrating Carnival on Rose Monday, which fell on 2026-02-16 this year.
 
     The RKI has today published all available data and called on modellers worldwide to estimate disease parameters and forecast the further course of the outbreak.
+
+    At the same time, political discussions started on whether and which non-pharmaceutical interventions should be implemented. First forecasts suggested that they are absolutely necessary to reduce the expected number of cases to not overwhelm the healthcare system. However, data shows that the German population has already started to reduce contacts and more people wear masks, which has not been taken into account by the first predictions. Some people argue that it is thus unnecessary to implement further measures, while others argue that measures are not necessary in their states, but in other states. To validate this claim, we need to identify the effects and starting days of such preventative contact reductions for each german region.
     """)
     return
 
@@ -37,7 +39,7 @@ def _(mo):
 
     This is the third in a series of three notebooks introducing Approximate Bayesian Computation with MEmilio. In the first two notebooks we calibrated simple single-region compartmental models. Here we extend the approach to a **metapopulation model** that resolves spatial heterogeneity across Germany.
 
-    We use [BayesFlow](https://bayesflow.org/main/index.html), a Python library for simulation-based inference with deep learning, as our inference method. This notebook is not a general tutorial on Neural Parameter Estimation with BayesFlow — for that we refer to the BayesFlow documentation and the primary literature. Our focus is on showing how MEmilio and BayesFlow work together.
+    We use [BayesFlow](https://bayesflow.org/main/index.html), a Python library for simulation-based inference with deep learning, as our inference method. This notebook is not a general tutorial on Neural Parameter Estimation with BayesFlow — for that we refer to the [BayesFlow documentation](https://bayesflow.org/main/user_guide/introduction.html) and the primary literature. Our focus is on showing how MEmilio and BayesFlow work together.
     """)
     return
 
@@ -303,7 +305,7 @@ def _(mo):
     mo.md(r"""
     ### The simulator
 
-    The function below is the **core forward model** that BayesFlow will call repeatedly during training. Given a set of intervention parameters it assembles the full metapopulation model, runs the ODE solver, and returns the simulated observables.
+    The function below is the **core forward model** that BayesFlow will call repeatedly during training. Given a set of intervention parameters it assembles the full metapopulation model, runs the ODE solver, and returns the simulated observables. Other than in the last notebooks, here we round the output data before giving it to our inference process. This is helpful here as it already reduces a main difference between the simulated data and the real data, improving the inference process.
 
     The outputs are the **Critical (ICU)** and **Dead** compartment counts for each of the six age groups, extracted at daily resolution for all five regions. This gives, per region, an array of shape `(31, 12)` — 31 time points (days 0–30) and 12 compartment-age combinations (6 age groups × 2 outcomes).
     """)
@@ -399,15 +401,12 @@ def _(mo):
 
 
 @app.cell
-def _(mio):
+def _():
     import os
     # Must be set before importing BayesFlow/Keras
     os.environ["KERAS_BACKEND"] = "tensorflow"
 
     import bayesflow as bf
-
-    # Suppress verbose MEmilio logs
-    mio.set_log_level(mio.LogLevel.Error)
 
     print("All imports successful!")
     print(f"BayesFlow version: {bf.__version__}")
@@ -514,7 +513,7 @@ def _(mo):
 
     The **inference network** (`CouplingFlow`) is a normalising flow that learns the mapping from the summary embedding to samples from the approximate posterior $q(\theta \mid s(y))$. It consists of alternating affine coupling layers and can represent complex, multi-modal distributions.
 
-    For more details we refer to the BayesFlow documentation.
+    For more details we refer to the [BayesFlow documentation](https://bayesflow.org/main/user_guide/index.html).
     """)
     return
 
@@ -578,8 +577,8 @@ def _(mo):
 
 
 @app.cell
-def _(mo, workflow):
-    mo.md("Running training... (this may take a few minutes)")
+def _(workflow):
+    print("Running training... (this may take a few minutes)")
 
     history = workflow.fit_online(
         epochs=15,
@@ -900,6 +899,16 @@ def _(mo, np, posterior_samples):
         _body += f"| Region {_r + 1} | {_ds_med} | {_ds_ci} | {_dv_med} | {_dv_ci} |\n"
 
     mo.md("## Posterior Summary\n\n" + _header + _body)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    Overall, the fitting seems to work and the aggregated plots look reasonable. However, the plots per region show some difficulties of the inference process for the regions without ICU cases and deaths. This is likely caused by the different scales of case numbers in the different regions and age groups. The 90% CIs especially for the damping start values are very high, indicating much uncertainty in the inferred parameters. Our results indicate that there is not enough data currently to perform inference on all regions and thus, that our research question here is not answerable.
+
+    Let's hope that somebody else volunteers to communicate this in a talk show...
+    """)
     return
 
 
