@@ -69,4 +69,7 @@ int main()
 
     // *** Print results. ***
     interpolated_result.print_table();
+
+    // We export the results as csv which is saved in the current folder. Then we can plot the results using plot_secir_results.py.
+    auto export_status = result.export_csv("../../cpp-tutorials/results_ode_ageres.csv");
 }

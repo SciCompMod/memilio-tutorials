@@ -22,7 +22,6 @@ int main()
 
     // Next, we have to set the epidemiological model parameters which include the average stay times per infection state, the state transition probabilities, and the contact frequency. A list of all parameters can be found at https://memilio.readthedocs.io/en/latest/cpp/models/osecir.html. The parameters can be set as follows:
     // Set infection state stay times (in days)
-    model.parameters.get<mio::osecir::TimeExposed<ScalarType>>()            = 3.2;
     model.parameters.get<mio::osecir::TimeInfectedNoSymptoms<ScalarType>>() = 2.;
     model.parameters.get<mio::osecir::TimeInfectedSymptoms<ScalarType>>()   = 6.;
     model.parameters.get<mio::osecir::TimeInfectedSevere<ScalarType>>()     = 12.;
@@ -41,11 +40,15 @@ int main()
         model.parameters.get<mio::osecir::ContactPatterns<ScalarType>>();
     contact_matrix[0] = mio::ContactMatrix<ScalarType>(Eigen::MatrixX<ScalarType>::Constant(1, 1, contact_frequency));
 
+    // EXERCISE: Please set the average time individuals spend in the exposed state (TimeExposed) to 4 days
+
     // In addition to the parameters, the initial number of individuals in each compartment has to be set. If a compartment is not set, its initial value is zero by default. In this example, we start our simulation with 1 % of the population initially infected, distributing them equally to the `Exposed` and the `InfectedNoSymptoms` state, where the latter contains pre- and asymptomatic infectious individuals. With the last line, we set the remaining part of the population (99%) to be susceptible.
     model.populations[{mio::AgeGroup(0), mio::osecir::InfectionState::Exposed}]            = 0.005 * total_population;
     model.populations[{mio::AgeGroup(0), mio::osecir::InfectionState::InfectedNoSymptoms}] = 0.005 * total_population;
     model.populations.set_difference_from_total({mio::AgeGroup(0), mio::osecir::InfectionState::Susceptible},
                                                 total_population);
+
+    // EXERCISE: Please set 2% of the population initially infected. The initially infected should be distributed to the compartpartments as follows: 0.5% is initially exposed (state `Exposed`), 0.5% is non-symptomatically infected (state `InfectedNosymptoms`) and 1% is symptomatically infected (state `InfectedSymptoms`).
 
     // To check that all initial parameter and compartmental values are in a meaningful range, MEmilio provides the `check_constraints` function. If a value exceeds its meaningful range, a warning is printed and the function returns `True`, otherwise it returns `False`.
     model.check_constraints();
@@ -57,4 +60,7 @@ int main()
 
     // *** Print results. ***
     interpolated_result.print_table({"S", "E", "C", "C_confirmed", "I", "I_confirmed", "H", "U", "R", "D"}, 12, 4);
+
+    // We export the results as csv which is saved in the current folder. Then we can plot the results using plot_secir_results.py.
+    auto export_status = result.export_csv("../../cpp-tutorials/exercises/results_ode.csv");
 }

@@ -4,11 +4,14 @@
 
 int main()
 {
-    // In the previous tutorial, we created, initialized and simulated MEmilio's ODE-based SECIR-type model with one (age) group. In this tutorial, we will show how to incorporate non-pharmaceutical interventions (NPIs) through the use of `Dampings` in the ODE-based SECIR-type model.
+    // MEmilio implements various models based on ordinary differential equations (ODEs). ODE-based models are a subclass of compartmental models in which individuals are grouped into subpopulations called compartments.
+
+    // In this tutorial we will setup and run MEmilio's ODE-based SECIR-type model. This model is particularly suited for pathogens with pre- or asymptomatic infection states and when severe or critical symptoms are possible. The model assumes perfect immunity after recovery. The used infection states or compartments are Susceptible (S), Exposed(E), Non-symptomatically Infected (Ins), Symptomatically Infected (Isy), Severely Infected (Isev), Critically Infected (Icri), Dead (D) and Recovered (R). The transitions are depicted in the following figure.
 
     // *** Set up model. ***
-    // First we create and initialize a SECIR-type model with one age group. For a detailed description on taht, see Tutorial 1.
-    size_t num_agegroups        = 1;
+    // We need to specify basic parameters. In this tutorial, we use a simple model without spatial resolution and with only one age group.
+    size_t num_agegroups = 1;
+    //  We first define the `total_population` size and the simulation horizong through the start day `t0`, and the simulation's end point `tmax`. By default, the ODE is solved with adaptive time stepping and the initial time step is `dt`.
     ScalarType total_population = 100000;
     ScalarType t0               = 0;
     ScalarType tmax             = 100;
@@ -17,6 +20,7 @@ int main()
     // Create model
     mio::osecir::Model<ScalarType> model(num_agegroups);
 
+    // Next, we have to set the epidemiological model parameters which include the average stay times per infection state, the state transition probabilities, and the contact frequency. A list of all parameters can be found at https://memilio.readthedocs.io/en/latest/cpp/models/osecir.html. The parameters can be set as follows:
     // Set infection state stay times (in days)
     model.parameters.get<mio::osecir::TimeExposed<ScalarType>>()            = 3.2;
     model.parameters.get<mio::osecir::TimeInfectedNoSymptoms<ScalarType>>() = 2.;
@@ -37,15 +41,14 @@ int main()
         model.parameters.get<mio::osecir::ContactPatterns<ScalarType>>();
     contact_matrix[0] = mio::ContactMatrix<ScalarType>(Eigen::MatrixX<ScalarType>::Constant(1, 1, contact_frequency));
 
-    // After the model initialization, we add a contact reduction (`Damping`) that represents an NPI like e.g. mask wearing or social distancing. Dampings are a factor applied to the contact frequency and can be added to the model at fixed simulation time points before simulating. They have a *Level* and a *Type*. A damping with a given level and type replaces the previously active one with the same level and type, while all currently active dampings of one level and different types are summed up. If two dampings have different levels (independent of the type) they are combined multiplicatively. In the following we apply a `Damping` of 0.9 after 10 days and another damping of 0.6 after 20 days which means that the contacts are reduced by 10% and 40%, respectively. To always retain a minimum level of contacts, a minimum contact frequency can be set that is never deceeded. In our example we set this minimum contact rate to 0.
-    contact_matrix[0].add_damping(0.9, mio::SimulationTime<ScalarType>(10.));
-    contact_matrix[0].add_damping(0.6, mio::SimulationTime<ScalarType>(20.));
-
-    // Again, we start with 0.5% of the population initially in `Exposed` and 0.5% initially in `InfectedNoSymptoms` while the remaining 99% is `Susceptible`.
+    // In addition to the parameters, the initial number of individuals in each compartment has to be set. If a compartment is not set, its initial value is zero by default. In this example, we start our simulation with 1 % of the population initially infected, distributing them equally to the `Exposed` and the `InfectedNoSymptoms` state, where the latter contains pre- and asymptomatic infectious individuals. With the last line, we set the remaining part of the population (99%) to be susceptible.
     model.populations[{mio::AgeGroup(0), mio::osecir::InfectionState::Exposed}]            = 0.005 * total_population;
     model.populations[{mio::AgeGroup(0), mio::osecir::InfectionState::InfectedNoSymptoms}] = 0.005 * total_population;
     model.populations.set_difference_from_total({mio::AgeGroup(0), mio::osecir::InfectionState::Susceptible},
                                                 total_population);
+
+    // To check that all initial parameter and compartmental values are in a meaningful range, MEmilio provides the `check_constraints` function. If a value exceeds its meaningful range, a warning is printed and the function returns `True`, otherwise it returns `False`.
+    model.check_constraints();
 
     // *** Simulate model. ***
     mio::TimeSeries<ScalarType> result = mio::osecir::simulate<ScalarType>(t0, tmax, dt, model);
@@ -54,4 +57,7 @@ int main()
 
     // *** Print results. ***
     interpolated_result.print_table({"S", "E", "C", "C_confirmed", "I", "I_confirmed", "H", "U", "R", "D"}, 12, 4);
+
+    // We export the results as csv which is saved in the current folder. Then we can plot the results using plot_secir_results.py.
+    auto export_status = result.export_csv("../../cpp-tutorials/results_ode.csv");
 }

@@ -46,29 +46,20 @@ target_link_libraries(tutorial_ide PRIVATE memilio ide_secir)
 add_executable(tutorial_lct tutorial_lct.cpp)
 target_link_libraries(tutorial_lct PRIVATE memilio lct_secir)
 
-add_executable(tutorial1 tutorial1.cpp)
-target_link_libraries(tutorial1 PRIVATE memilio ode_secir Boost::filesystem)
+add_executable(tutorial01 tutorial01.cpp)
+target_link_libraries(tutorial01 PRIVATE memilio ode_secir Boost::filesystem)
 
-add_executable(tutorial2 tutorial2.cpp)
-target_link_libraries(tutorial2 PRIVATE memilio ode_secir Boost::filesystem)
+add_executable(tutorial02 tutorial02.cpp)
+target_link_libraries(tutorial02 PRIVATE memilio ode_secir Boost::filesystem)
 
-add_executable(tutorial3 tutorial3.cpp)
-target_link_libraries(tutorial3 PRIVATE memilio ode_secir Boost::filesystem)
+add_executable(tutorial03 tutorial03.cpp)
+target_link_libraries(tutorial03 PRIVATE memilio ode_secir Boost::filesystem)
 
-add_executable(exercise3 exercises/exercise3.cpp)
-target_link_libraries(exercise3 PRIVATE memilio ode_secir Boost::filesystem)
+add_executable(tutorial05 tutorial05.cpp)
+target_link_libraries(tutorial05 PRIVATE memilio ode_secir Boost::filesystem)
 
-add_executable(tutorial5 tutorial5.cpp)
-target_link_libraries(tutorial5 PRIVATE memilio ode_secir Boost::filesystem)
-
-add_executable(exercise5 exercises/exercise5.cpp)
-target_link_libraries(exercise5 PRIVATE memilio ode_secir Boost::filesystem)
-
-add_executable(tutorial7 tutorial7.cpp)
-target_link_libraries(tutorial7 PRIVATE memilio ode_secir Boost::filesystem)
-
-add_executable(exercise7 exercises/exercise7.cpp)
-target_link_libraries(exercise7 PRIVATE memilio ode_secir Boost::filesystem)
+add_executable(tutorial07 tutorial07.cpp)
+target_link_libraries(tutorial07 PRIVATE memilio ode_secir Boost::filesystem)
 
 add_executable(tutorial10 tutorial10.cpp)
 target_link_libraries(tutorial10 PRIVATE memilio ode_secir Boost::filesystem)

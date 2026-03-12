@@ -155,5 +155,5 @@ int main()
         {"S->E", "E->C", "C->I", "C->R", "I->H", "I->R", "H->U", "H->R", "U->D", "U->R"}, 12, 4);
 
     // We export the results as csv which is saved in the current folder. Then we can plot the results using plot_secir_results.py.
-    auto export_status = sim.get_result().export_csv("../../cpp-tutorials/results_ide.csv");
+    auto export_status = sim.get_result().export_csv("../../cpp-tutorials/exercises/results_ide.csv");
 }

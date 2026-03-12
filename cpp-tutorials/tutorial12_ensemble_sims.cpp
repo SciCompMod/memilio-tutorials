@@ -129,7 +129,7 @@ int main()
     median_result.print_table({}, 10, 2);
 
     // Save the result to CSV, so we can plot it using the "plot_secir_results.py" script.
-    (void)median_result.export_csv("../results_ensemble_sims.csv");
+    (void)median_result.export_csv("../../cpp-tutorials/results_ode_ensemble_sims.csv");
 
     // Close the MPI context and exit.
     mio::mpi::finalize();

@@ -132,5 +132,12 @@ int main()
     interpolated_results.print_table({"S", "E", "C", "I", "H", "U", "R", "D "}, 12, 4);
 
     // We export the results as csv which is saved in the current folder. Then we can plot the results using plot_secir_results.py.
-    auto export_status = population_no_subcompartments.export_csv("../../cpp-tutorials/results_lct.csv");
+    auto export_status = population_no_subcompartments.export_csv("../../cpp-tutorials/exercises/results_lct.csv");
+
+    if (export_status == mio::success()) {
+        std::cout << "success \n";
+    }
+    else {
+        std::cout << "no success\n";
+    }
 }

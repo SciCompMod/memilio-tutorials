@@ -84,14 +84,15 @@ int main()
 
     // After having initialized the models, we add two nodes (regions) to the graph
     graph.add_node(0, model_region1, t0, dt);
-    graph.add_node(1, model_region2, t0, dt);
+
+    //EXERCISE: Please add the second node to the graph.
 
     // If we would simulate the graph-based metapopulation model now, we would just have two independent ODE-based SECIR-type models running with different initial conditions. In reality, there is usually exchange between regions through individuals travelling or commuting from one region to another. This can be realized via graph edges.
     // We here use a symmetric mobility i.e. we have the same number of individuals that travel from node 0 to node 1 as vice versa. We let 10% of the population commute via the edges twice a day.
     graph.add_edge(
         0, 1, Eigen::VectorX<ScalarType>::Constant((size_t)mio::osecir::InfectionState::Count * num_agegroups, 0.1));
-    graph.add_edge(
-        1, 0, Eigen::VectorX<ScalarType>::Constant((size_t)mio::osecir::InfectionState::Count * num_agegroups, 0.1));
+
+    // EXERCISE: Please add an edge from node 1 to node 0.
 
     // Exchange commuters twice a day
     double dt_exchange = 0.5;
@@ -99,7 +100,8 @@ int main()
     // *** Simulate model. ***
     // We now have finished initializing the metapopulation model. The graph-based simulation is created and advanced until `tmax`
     auto sim = mio::make_mobility_sim<ScalarType>(t0, dt_exchange, std::move(graph));
-    sim.advance(tmax);
+
+    // EXERCISE: Please advance the simulation until `tmax`.
 
     // As every graph node has its own model, we get one result time series per node. Those can be accessed as follows
     auto result_region0 = sim.get_graph().nodes()[0].property.get_result();
@@ -109,4 +111,7 @@ int main()
 
     // *** Print results. ***
     interpolated_result_r0.print_table();
+
+    // We export the results for region 0 as csv which is saved in the current folder. Then we can plot the results using plot_secir_results.py.
+    auto export_status = result_region0.export_csv("../../cpp-tutorials/exercises/results_ode_region0.csv");
 }

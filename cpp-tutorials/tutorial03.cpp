@@ -37,13 +37,9 @@ int main()
         model.parameters.get<mio::osecir::ContactPatterns<ScalarType>>();
     contact_matrix[0] = mio::ContactMatrix<ScalarType>(Eigen::MatrixX<ScalarType>::Constant(1, 1, contact_frequency));
 
-    // EXERCISE: Please set the model's contact frequency to 10.
-
     // After the model initialization, we add a contact reduction (`Damping`) that represents an NPI like e.g. mask wearing or social distancing. Dampings are a factor applied to the contact frequency and can be added to the model at fixed simulation time points before simulating. They have a *Level* and a *Type*. A damping with a given level and type replaces the previously active one with the same level and type, while all currently active dampings of one level and different types are summed up. If two dampings have different levels (independent of the type) they are combined multiplicatively. In the following we apply a `Damping` of 0.9 after 10 days and another damping of 0.6 after 20 days which means that the contacts are reduced by 10% and 40%, respectively. To always retain a minimum level of contacts, a minimum contact frequency can be set that is never deceeded. In our example we set this minimum contact rate to 0.
     contact_matrix[0].add_damping(0.9, mio::SimulationTime<ScalarType>(10.));
     contact_matrix[0].add_damping(0.6, mio::SimulationTime<ScalarType>(20.));
-
-    //EXERCISE: Please create a damping that replaces the 10% reduction after 10 days by a 20% reduction. Additionally, add a damping after 40 days that increases the contact rate by 50%.
 
     // Again, we start with 0.5% of the population initially in `Exposed` and 0.5% initially in `InfectedNoSymptoms` while the remaining 99% is `Susceptible`.
     model.populations[{mio::AgeGroup(0), mio::osecir::InfectionState::Exposed}]            = 0.005 * total_population;
@@ -58,4 +54,7 @@ int main()
 
     // *** Print results. ***
     interpolated_result.print_table({"S", "E", "C", "C_confirmed", "I", "I_confirmed", "H", "U", "R", "D"}, 12, 4);
+
+    // We export the results as csv which is saved in the current folder. Then we can plot the results using plot_secir_results.py.
+    auto export_status = result.export_csv("../../cpp-tutorials/results_ode_npis.csv");
 }
