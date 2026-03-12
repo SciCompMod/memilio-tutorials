@@ -63,4 +63,10 @@ int main()
 
     // We export the results as csv which is saved in the current folder. Then we can plot the results using plot_secir_results.py.
     auto export_status = result.export_csv("../../cpp-tutorials/exercises/results_ode.csv");
+
+    // Try yourself
+    // You have seen how to set up and run MEmilio's ODE-SECIR model. You can now explore the model yourself. Here are some suggestions what you can do:
+    // - **Controlling the transmission process**: What happens if you modify the transmission probability or the contact frequency in the same way?
+    // - **Diseases with severe courses**: Increase the proportion of severe or critical cases. What happens to the number of deaths?
+    // - **Asymptomatic courses**: How does disease dynamics behave if we only have pre-symptomatic and no asymptomatic cases? What happens if we increase the average time in the non-symptomatic state?
 }

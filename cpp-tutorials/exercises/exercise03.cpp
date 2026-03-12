@@ -61,4 +61,9 @@ int main()
 
     // We export the results as csv which is saved in the current folder. Then we can plot the results using plot_secir_results.py.
     auto export_status = result.export_csv("../../cpp-tutorials/exercises/results_ode_npis.csv");
+
+    //Try yourself
+    // After having learned how to use dampings, you can now try out yourself. Some suggestions what you can try are:
+    // - **Lifting non-pharmaceutical interventions (NPIs)**: Can you temporarily implement an NPI and lift it again after 2 weeks?
+    // - **Increasing contact rates**: Increase the contact rate after 20 days. What does this do to the simulated disease spread?
 }

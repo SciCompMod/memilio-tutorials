@@ -114,4 +114,9 @@ int main()
 
     // We export the results for region 0 as csv which is saved in the current folder. Then we can plot the results using plot_secir_results.py.
     auto export_status = result_region0.export_csv("../../cpp-tutorials/exercises/results_ode_region0.csv");
+
+    // Try yourself
+    // You can now explore the Graph-ODE model yourself. Here are some suggestions what you can do:
+    // - **Exchanging individuals between regions with different frequencies**: Set up two identical models with two regions (nodes) and symmetric exchange between regions. The first model exchanges individuals twice a day and the second every hour. How does that influence infection dynamics?
+    // - **Spatial heterogeneity**: Add a third region to the model. Commuters of the third region only commute to the second region with a rate twice as high as the mobility  rate between the first and second region.
 }

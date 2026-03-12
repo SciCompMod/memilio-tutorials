@@ -239,11 +239,31 @@ def _(mo):
 
 
 @app.cell
-def _(graph, mio, model, np, osecir):
+def _(model, np):
     # One coefficient per (age group x compartment)
     mobility_coefficients = 0.1 * np.ones(model.populations.numel())
-    # Dead individuals do not commute
-    mobility_coefficients[osecir.InfectionState.Dead] = 0
+    return (mobility_coefficients,)
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ### Exercise
+
+    Set the mobility coefficients for `Dead` individuals to zero:
+    Hint: For the first age group this can be done via `mobility_coefficients[0 * int(osecir.InfectionState.Dead) + osecir.InfectionState.Dead] = 0`.
+    """)
+    return
+
+
+@app.cell
+def _():
+    # Insert code here
+    return
+
+
+@app.cell
+def _(graph, mio, mobility_coefficients):
     mobility_params = mio.MobilityParameters(mobility_coefficients)
     # Add two edges to graph
     graph.add_edge(0, 1, mobility_params)
@@ -356,6 +376,19 @@ def _(osecir, plt, result_region0_interpolated, result_region1_interpolated):
     ax.set_ylabel('Individuals [#]')
     ax.legend()
     plt.show()
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ## Try yourself
+
+    You can now explore the Graph-ODE model yourself. Here are some suggestions what you can do:
+
+    - **Exchanging individuals between regions with different frequencies**: Set up two identical models with two regions (nodes) and symmetric exchange between regions. The first model exchanges individuals twice a day and the second every hour. How does that influence infection dynamics?
+    - **Spatial heterogeneity**: Add a third region to the model. Commuters of the third region only commute to the second region with a rate twice as high as the mobility  rate between the first and second region.
+    """)
     return
 
 

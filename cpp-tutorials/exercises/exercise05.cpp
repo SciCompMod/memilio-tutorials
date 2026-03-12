@@ -74,4 +74,9 @@ int main()
 
     // We export the results as csv which is saved in the current folder. Then we can plot the results using plot_secir_results.py.
     auto export_status = result.export_csv("../../cpp-tutorials/exercises/results_ode_ageres.csv");
+
+    // Try yourself
+    // Now you can explore an age-resolved SECIR-model yourself. Examples what you can do are:
+    // - **Even more age groups**: Initialize a model with 5 (age) groups with each group having a 2 times higher risk of dying from critical infection than the group before.
+    // - **Age-dependent contact rates**: How can you include varying contact rates between age groups? Increase the contact rate within age group 1 and between age group 1 and 2.
 }
