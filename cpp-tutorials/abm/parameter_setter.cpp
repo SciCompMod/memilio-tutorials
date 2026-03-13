@@ -292,7 +292,7 @@ void set_local_parameters(mio::abm::Model& world)
         case mio::abm::LocationType::Home:
             loc.get_infection_parameters().get<mio::abm::ContactRates>() = contacts_home;
             loc.get_infection_parameters().get<mio::abm::ContactRates>().array() *= 1.4; //17 hours //intensity
-            loc.get_infection_parameters().get<mio::abm::ContactRates>().array() *= 15.0*0.0; // Intensity
+            loc.get_infection_parameters().get<mio::abm::ContactRates>().array() *= 15.0; // Intensity
             break;
         case mio::abm::LocationType::School:
             loc.get_infection_parameters().get<mio::abm::ContactRates>() = contacts_school;
