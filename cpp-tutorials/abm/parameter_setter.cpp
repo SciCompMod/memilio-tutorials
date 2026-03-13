@@ -320,30 +320,3 @@ void set_local_parameters(mio::abm::Model& world)
         }
     }
 }
-
-void set_local_parameters_event(mio::abm::Model& world, double contact_rate_multiplier)
-{
-    set_local_parameters(world);
-    for (auto& loc : world.get_locations()) {
-        switch (loc.get_type()) {
-        case mio::abm::LocationType::Home:
-            loc.get_infection_parameters().get<mio::abm::ContactRates>().array() *= contact_rate_multiplier; //15 hours
-            break;
-        case mio::abm::LocationType::School:
-            loc.get_infection_parameters().get<mio::abm::ContactRates>().array() *= contact_rate_multiplier; //2 hours
-            break;
-        case mio::abm::LocationType::Work:
-            loc.get_infection_parameters().get<mio::abm::ContactRates>().array() *= contact_rate_multiplier; // 3 hours
-            break;
-        case mio::abm::LocationType::SocialEvent:
-            loc.get_infection_parameters().get<mio::abm::ContactRates>().array() *= contact_rate_multiplier; // 3 hours
-            break;
-        case mio::abm::LocationType::BasicsShop:
-            loc.get_infection_parameters().get<mio::abm::ContactRates>().array() *= contact_rate_multiplier; // 2 hours
-            break;
-        default:
-            loc.get_infection_parameters().get<mio::abm::ContactRates>().array() *= contact_rate_multiplier;
-            break;
-        }
-    }
-}
