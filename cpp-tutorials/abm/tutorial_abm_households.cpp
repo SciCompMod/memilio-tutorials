@@ -125,9 +125,9 @@ int main(int argc, char* argv[])
     // creates the actual persons and their home locations.
     //
     // CLI parameters (see usage at top of main):
-    //   argv[1] = n_households       (population size: 50, 125, 500)
-    //   argv[2] = infected_frac      (initial infected fraction: 0.05, 0.2, 0.5)
-    //   argv[3] = sim_days           (simulation duration: 15, 30, 90)
+    //   argv[1] = n_households       (number of households, default: 125)
+    //   argv[2] = infected_frac      (initial infected fraction, default: 0.2)
+    //   argv[3] = sim_days           (simulation duration, default: 30)
     int n_households = arg_n_households;
 
     // --- Type A: two-person household (1 parent + 1 child) -------------------
@@ -242,9 +242,8 @@ int main(int argc, char* argv[])
     }
 
     // *** Run the simulation. ***
-    // We simulate 30 days. The Simulation object takes ownership of the model.
-    // A History logger records the number of persons in each InfectionState
-    // at every time step.
+    // By default, we simulate 30 days. The Simulation object takes ownership of the model.
+    // A History logger records the number of persons in each InfectionState at every time step.
     auto t0   = mio::abm::TimePoint(0);
     auto tmax = t0 + mio::abm::days(arg_sim_days);
     auto sim  = mio::abm::Simulation(t0, std::move(model));
