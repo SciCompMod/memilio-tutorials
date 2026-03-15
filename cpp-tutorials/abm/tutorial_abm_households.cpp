@@ -55,12 +55,12 @@
 int main(int argc, char* argv[])
 {
     // Usage: tutorial_abm_household [n_households] [infected_frac] [sim_days]
-    //   n_households  : number of each household type          (default: 125)
+    //   n_households  : number of each household type           (default: 125)
     //   infected_frac : fraction initially infected             (default: 0.2)
     //   sim_days      : simulation duration in days             (default: 30)
-    int    arg_n_households  = (argc > 1) ? std::atoi(argv[1]) : 125;
+    int arg_n_households     = (argc > 1) ? std::atoi(argv[1]) : 125;
     double arg_infected_frac = (argc > 2) ? std::atof(argv[2]) : 0.2;
-    int    arg_sim_days      = (argc > 3) ? std::atoi(argv[3]) : 30;
+    int arg_sim_days         = (argc > 3) ? std::atoi(argv[3]) : 30;
 
     // Suppress verbose log output; only warnings and errors are shown.
     mio::set_log_level(mio::LogLevel::warn);
@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
     // one group when created. The number and meaning of groups must be
     // consistent throughout the entire setup.
     size_t num_age_groups         = 6;
-    const auto age_group_0_to_4   = mio::AgeGroup(0); // toddlers / kindergarten
+    const auto age_group_0_to_4   = mio::AgeGroup(0); // toddlers / kindergarden
     const auto age_group_5_to_14  = mio::AgeGroup(1); // school children
     const auto age_group_15_to_34 = mio::AgeGroup(2); // young adults
     const auto age_group_35_to_59 = mio::AgeGroup(3); // middle-aged adults
@@ -92,9 +92,7 @@ int main(int argc, char* argv[])
     model.parameters.get<mio::abm::AgeGroupGotoSchool>()                    = false;
     model.parameters.get<mio::abm::AgeGroupGotoSchool>()[age_group_5_to_14] = true;
 
-    model.parameters.get<mio::abm::AgeGroupGotoWork>().set_multiple(
-        {age_group_15_to_34, age_group_35_to_59}, true);
-
+    model.parameters.get<mio::abm::AgeGroupGotoWork>().set_multiple({age_group_15_to_34, age_group_35_to_59}, true);
 
     // *** Define HouseholdMember types. ***
     // A HouseholdMember is not a person itself; it is a *template* that
@@ -103,7 +101,7 @@ int main(int argc, char* argv[])
 
     // child: equally likely to be 0-4 or 5-14 years old (weights 1 and 1).
     auto child = mio::abm::HouseholdMember(num_age_groups);
-    child.set_age_weight(age_group_0_to_4,  1);
+    child.set_age_weight(age_group_0_to_4, 1);
     child.set_age_weight(age_group_5_to_14, 1);
 
     // parent: equally likely to be 15-34 or 35-59 years old.
@@ -134,7 +132,7 @@ int main(int argc, char* argv[])
 
     // --- Type A: two-person household (1 parent + 1 child) -------------------
     auto twoPersonHousehold = mio::abm::Household();
-    twoPersonHousehold.add_members(child,  1);
+    twoPersonHousehold.add_members(child, 1);
     twoPersonHousehold.add_members(parent, 1);
 
     auto twoPersonGroup = mio::abm::HouseholdGroup();
@@ -143,7 +141,7 @@ int main(int argc, char* argv[])
 
     // --- Type B: three-person household (2 parents + 1 child) ----------------
     auto threePersonHousehold = mio::abm::Household();
-    threePersonHousehold.add_members(child,  1);
+    threePersonHousehold.add_members(child, 1);
     threePersonHousehold.add_members(parent, 2);
 
     auto threePersonGroup = mio::abm::HouseholdGroup();
@@ -169,12 +167,11 @@ int main(int argc, char* argv[])
     // visit: a hospital, an ICU, a social event venue, a shop, a school, and
     // a workplace. The returned LocationId is used to assign persons later.
 
-
     // One hospital and one ICU shared by all persons.
     auto hospital = model.add_location(mio::abm::LocationType::Hospital);
-    auto icu = model.add_location(mio::abm::LocationType::ICU);
+    auto icu      = model.add_location(mio::abm::LocationType::ICU);
 
-    // One social event venue (e.g. a community centre).
+    // One social event venue (e.g., a community center).
     auto event = model.add_location(mio::abm::LocationType::SocialEvent);
 
     // One supermarket.  Groceries shops allow up to 20 simultaneous contacts.
@@ -186,43 +183,38 @@ int main(int argc, char* argv[])
     // One workplace for all working adults.
     auto work = model.add_location(mio::abm::LocationType::Work);
 
-
     // *** Assign initial infection states. ***
     // Each person draws a random infection state from the distribution below.
     // Persons who are not Susceptible receive a full Infection object so their
     // viral-load course and state transitions are properly initialised.
     //
-    //  Index | InfectionState          | Probability
-    //  ------|-------------------------|------------
-    //    0   | Susceptible             | 0.80
-    //    1   | Exposed                 | 0.10
-    //    2   | InfectedNoSymptoms      | 0.01
-    //    3   | InfectedSymptoms        | 0.01
-    //    4   | InfectedSevere          | 0.01
-    //    5   | InfectedCritical        | 0.01
-    //    6   | Recovered               | 0.00
-    //    7   | Dead                    | 0.06
+    //  Index | InfectionState                 | Probability
+    //  ------|--------------------------------|------------
+    //    0   | Susceptible                    | 1.0 - arg_infected_frac
+    //    1   | Exposed                        | 0.25 * arg_infected_frac
+    //    2   | InfectedNoSymptoms (I_NS)      | 0.5 * arg_infected_frac
+    //    3   | InfectedSymptoms   (I_Sy)      | 0.25 * arg_infected_frac
+    //    4   | InfectedSevere     (I_Sev)     | 0.0
+    //    5   | InfectedCritical   (I_Crit)    | 0.0
+    //    6   | Recovered                      | 0.0
+    //    7   | Dead                           | 0.0
     auto start_date = mio::abm::TimePoint(0); // t = 0 s from the simulation epoch
 
     // Build infection distribution from the infected fraction.
     // The non-susceptible portion is split: 25% Exposed, 50% I_NS, 25% I_Sy.
     const double f = arg_infected_frac;
-    std::vector<ScalarType> infection_distribution{
-        1.0 - f, f * 0.25, f * 0.50, f * 0.25, 0.0, 0.0, 0.0, 0.0};
+    std::vector<ScalarType> infection_distribution{1.0 - f, f * 0.25, f * 0.50, f * 0.25, 0.0, 0.0, 0.0, 0.0};
 
     for (auto& person : model.get_persons()) {
         // Draw an infection state from the distribution above.
         mio::abm::InfectionState infection_state = mio::abm::InfectionState(
-            mio::DiscreteDistribution<size_t>::get_instance()(
-                mio::thread_local_rng(), infection_distribution));
-        
+            mio::DiscreteDistribution<size_t>::get_instance()(mio::thread_local_rng(), infection_distribution));
+
         auto rng = mio::abm::PersonalRandomNumberGenerator(person);
         if (infection_state != mio::abm::InfectionState::Susceptible) {
             // Infect an agent with the drawn state
-            person.add_new_infection(
-                mio::abm::Infection(rng, mio::abm::VirusVariant::Wildtype,
-                                    person.get_age(), model.parameters,
-                                    start_date, infection_state));
+            person.add_new_infection(mio::abm::Infection(rng, mio::abm::VirusVariant::Wildtype, person.get_age(),
+                                                         model.parameters, start_date, infection_state));
         }
     }
 
@@ -244,8 +236,7 @@ int main(int argc, char* argv[])
         if (person.get_age() == age_group_5_to_14) {
             model.assign_location(id, school);
         }
-        if (person.get_age() == age_group_15_to_34 ||
-            person.get_age() == age_group_35_to_59) {
+        if (person.get_age() == age_group_15_to_34 || person.get_age() == age_group_35_to_59) {
             model.assign_location(id, work);
         }
     }
@@ -266,9 +257,7 @@ int main(int argc, char* argv[])
     // *** Write results to file. ***
     std::ofstream outfile("abm_household.txt");
     std::get<0>(historyTimeSeries.get_log())
-        .print_table(outfile,
-                     {"S", "E", "I_NS", "I_Sy", "I_Sev", "I_Crit", "R", "D"},
-                     7, 4);
+        .print_table(outfile, {"S", "E", "I_NS", "I_Sy", "I_Sev", "I_Crit", "R", "D"}, 7, 4);
     std::cout << "Results written to abm_household.txt\n";
 
     return 0;

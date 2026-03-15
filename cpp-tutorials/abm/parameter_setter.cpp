@@ -10,59 +10,63 @@ const auto age_group_35_to_59 = mio::AgeGroup(3);
 const auto age_group_60_to_79 = mio::AgeGroup(4);
 const auto age_group_80_plus  = mio::AgeGroup(5);
 
-std::pair<double, double> get_my_and_sigma(std::pair<double, double> mean_and_std)
+std::pair<double, double> get_mu_and_sigma(std::pair<double, double> mean_and_std)
 {
     auto mean    = mean_and_std.first;
     auto stddev  = mean_and_std.second;
-    double my    = log(mean * mean / sqrt(mean * mean + stddev * stddev));
+    double mu    = log(mean * mean / sqrt(mean * mean + stddev * stddev));
     double sigma = sqrt(log(1 + stddev * stddev / (mean * mean)));
-    return {my, sigma};
+    return {mu, sigma};
 }
 
 void set_world_parameters(mio::abm::Parameters& params)
 {
-    auto incubation_period_my_sigma          = get_my_and_sigma({4.5, 1.5});
-    params.get<mio::abm::TimeExposedToNoSymptoms>() = mio::ParameterDistributionLogNormal(incubation_period_my_sigma.first, incubation_period_my_sigma.second);
+    auto incubation_period_mu_sigma = get_mu_and_sigma({4.5, 1.5});
+    params.get<mio::abm::TimeExposedToNoSymptoms>() =
+        mio::ParameterDistributionLogNormal(incubation_period_mu_sigma.first, incubation_period_mu_sigma.second);
 
-    auto InfectedNoSymptoms_to_symptoms_my_sigma             = get_my_and_sigma({1.1, 0.9});
-    params.get<mio::abm::TimeInfectedNoSymptomsToSymptoms>() = mio::ParameterDistributionLogNormal(InfectedNoSymptoms_to_symptoms_my_sigma.first,
-                                                                InfectedNoSymptoms_to_symptoms_my_sigma.second);
+    auto InfectedNoSymptoms_to_symptoms_mu_sigma             = get_mu_and_sigma({1.1, 0.9});
+    params.get<mio::abm::TimeInfectedNoSymptomsToSymptoms>() = mio::ParameterDistributionLogNormal(
+        InfectedNoSymptoms_to_symptoms_mu_sigma.first, InfectedNoSymptoms_to_symptoms_mu_sigma.second);
 
-    auto TimeInfectedNoSymptomsToRecovered_my_sigma           = get_my_and_sigma({8.0, 2.0});
-    params.get<mio::abm::TimeInfectedNoSymptomsToRecovered>() = mio::ParameterDistributionLogNormal(TimeInfectedNoSymptomsToRecovered_my_sigma.first,
-                                                                 TimeInfectedNoSymptomsToRecovered_my_sigma.second);
+    auto TimeInfectedNoSymptomsToRecovered_mu_sigma           = get_mu_and_sigma({8.0, 2.0});
+    params.get<mio::abm::TimeInfectedNoSymptomsToRecovered>() = mio::ParameterDistributionLogNormal(
+        TimeInfectedNoSymptomsToRecovered_mu_sigma.first, TimeInfectedNoSymptomsToRecovered_mu_sigma.second);
 
-    auto TimeInfectedSymptomsToSevere_my_sigma           = get_my_and_sigma({6.6, 4.9});
-    params.get<mio::abm::TimeInfectedSymptomsToSevere>() = mio::ParameterDistributionLogNormal(TimeInfectedSymptomsToSevere_my_sigma.first,
-                                                            TimeInfectedSymptomsToSevere_my_sigma.second);
+    auto TimeInfectedSymptomsToSevere_mu_sigma           = get_mu_and_sigma({6.6, 4.9});
+    params.get<mio::abm::TimeInfectedSymptomsToSevere>() = mio::ParameterDistributionLogNormal(
+        TimeInfectedSymptomsToSevere_mu_sigma.first, TimeInfectedSymptomsToSevere_mu_sigma.second);
 
-    auto TimeInfectedSymptomsToRecovered_my_sigma           = get_my_and_sigma({8.0, 2.0});
-    params.get<mio::abm::TimeInfectedSymptomsToRecovered>() = mio::ParameterDistributionLogNormal(TimeInfectedSymptomsToRecovered_my_sigma.first,
-                                                               TimeInfectedSymptomsToRecovered_my_sigma.second);
+    auto TimeInfectedSymptomsToRecovered_mu_sigma           = get_mu_and_sigma({8.0, 2.0});
+    params.get<mio::abm::TimeInfectedSymptomsToRecovered>() = mio::ParameterDistributionLogNormal(
+        TimeInfectedSymptomsToRecovered_mu_sigma.first, TimeInfectedSymptomsToRecovered_mu_sigma.second);
 
-    auto TimeInfectedSevereToCritical_my_sigma           = get_my_and_sigma({1.5, 2.0});
-    params.get<mio::abm::TimeInfectedSevereToCritical>() = mio::ParameterDistributionLogNormal(TimeInfectedSevereToCritical_my_sigma.first,
-                                                            TimeInfectedSevereToCritical_my_sigma.second);
+    auto TimeInfectedSevereToCritical_mu_sigma           = get_mu_and_sigma({1.5, 2.0});
+    params.get<mio::abm::TimeInfectedSevereToCritical>() = mio::ParameterDistributionLogNormal(
+        TimeInfectedSevereToCritical_mu_sigma.first, TimeInfectedSevereToCritical_mu_sigma.second);
 
-    auto TimeInfectedSevereToRecovered_my_sigma           = get_my_and_sigma({18.1, 6.3});
-    params.get<mio::abm::TimeInfectedSevereToRecovered>() = mio::ParameterDistributionLogNormal(TimeInfectedSevereToRecovered_my_sigma.first,
-                                                             TimeInfectedSevereToRecovered_my_sigma.second);
+    auto TimeInfectedSevereToRecovered_mu_sigma           = get_mu_and_sigma({18.1, 6.3});
+    params.get<mio::abm::TimeInfectedSevereToRecovered>() = mio::ParameterDistributionLogNormal(
+        TimeInfectedSevereToRecovered_mu_sigma.first, TimeInfectedSevereToRecovered_mu_sigma.second);
 
-    auto TimeInfectedCriticalToDead_my_sigma           = get_my_and_sigma({10.7, 4.8});
-    params.get<mio::abm::TimeInfectedCriticalToDead>() = mio::ParameterDistributionLogNormal(TimeInfectedCriticalToDead_my_sigma.first,
-                                                          TimeInfectedCriticalToDead_my_sigma.second);
+    auto TimeInfectedCriticalToDead_mu_sigma           = get_mu_and_sigma({10.7, 4.8});
+    params.get<mio::abm::TimeInfectedCriticalToDead>() = mio::ParameterDistributionLogNormal(
+        TimeInfectedCriticalToDead_mu_sigma.first, TimeInfectedCriticalToDead_mu_sigma.second);
 
-    auto TimeInfectedCriticalToRecovered_my_sigma           = get_my_and_sigma({18.1, 6.3});
-    params.get<mio::abm::TimeInfectedCriticalToRecovered>() = mio::ParameterDistributionLogNormal(TimeInfectedCriticalToRecovered_my_sigma.first,
-                                                               TimeInfectedCriticalToRecovered_my_sigma.second);
+    auto TimeInfectedCriticalToRecovered_mu_sigma           = get_mu_and_sigma({18.1, 6.3});
+    params.get<mio::abm::TimeInfectedCriticalToRecovered>() = mio::ParameterDistributionLogNormal(
+        TimeInfectedCriticalToRecovered_mu_sigma.first, TimeInfectedCriticalToRecovered_mu_sigma.second);
 
     // Set percentage parameters
-    params.get<mio::abm::SymptomsPerInfectedNoSymptoms>()[{mio::abm::VirusVariant::Wildtype, age_group_0_to_4}]   = 0.50;
-    params.get<mio::abm::SymptomsPerInfectedNoSymptoms>()[{mio::abm::VirusVariant::Wildtype, age_group_5_to_14}]  = 0.55;
-    params.get<mio::abm::SymptomsPerInfectedNoSymptoms>()[{mio::abm::VirusVariant::Wildtype, age_group_15_to_34}] = 0.60;
-    params.get<mio::abm::SymptomsPerInfectedNoSymptoms>()[{mio::abm::VirusVariant::Wildtype, age_group_35_to_59}] = 0.70;
-    params.get<mio::abm::SymptomsPerInfectedNoSymptoms>()[{mio::abm::VirusVariant::Wildtype, age_group_60_to_79}] = 0.83;
-    params.get<mio::abm::SymptomsPerInfectedNoSymptoms>()[{mio::abm::VirusVariant::Wildtype, age_group_80_plus}]  = 0.90;
+    params.get<mio::abm::SymptomsPerInfectedNoSymptoms>()[{mio::abm::VirusVariant::Wildtype, age_group_0_to_4}]  = 0.50;
+    params.get<mio::abm::SymptomsPerInfectedNoSymptoms>()[{mio::abm::VirusVariant::Wildtype, age_group_5_to_14}] = 0.55;
+    params.get<mio::abm::SymptomsPerInfectedNoSymptoms>()[{mio::abm::VirusVariant::Wildtype, age_group_15_to_34}] =
+        0.60;
+    params.get<mio::abm::SymptomsPerInfectedNoSymptoms>()[{mio::abm::VirusVariant::Wildtype, age_group_35_to_59}] =
+        0.70;
+    params.get<mio::abm::SymptomsPerInfectedNoSymptoms>()[{mio::abm::VirusVariant::Wildtype, age_group_60_to_79}] =
+        0.83;
+    params.get<mio::abm::SymptomsPerInfectedNoSymptoms>()[{mio::abm::VirusVariant::Wildtype, age_group_80_plus}] = 0.90;
 
     params.get<mio::abm::SeverePerInfectedSymptoms>()[{mio::abm::VirusVariant::Wildtype, age_group_0_to_4}]   = 0.02;
     params.get<mio::abm::SeverePerInfectedSymptoms>()[{mio::abm::VirusVariant::Wildtype, age_group_5_to_14}]  = 0.03;
@@ -87,7 +91,7 @@ void set_world_parameters(mio::abm::Parameters& params)
 
     // Set infection parameters
     params.get<mio::abm::InfectionRateFromViralShed>()[{mio::abm::VirusVariant::Wildtype}] = 5.0;
-    params.get<mio::abm::AerosolTransmissionRates>()                                    = 0.0;
+    params.get<mio::abm::AerosolTransmissionRates>()                                       = 0.0;
 }
 
 void set_local_parameters(mio::abm::Model& world)
