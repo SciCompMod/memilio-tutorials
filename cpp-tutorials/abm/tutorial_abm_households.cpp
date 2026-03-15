@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
     // creates the actual persons and their home locations.
     //
     // CLI parameters (see usage at top of main):
-    //   argv[1] = n_households       (number of households, default: 125)
+    //   argv[1] = n_households       (number of each household type, default: 125)
     //   argv[2] = infected_frac      (initial infected fraction, default: 0.2)
     //   argv[3] = sim_days           (simulation duration, default: 30)
     int n_households = arg_n_households;
@@ -153,6 +153,10 @@ int main(int argc, char* argv[])
     // weight 1 only for age_group_35_to_59.
     auto singleAdultHousehold = mio::abm::Household();
     singleAdultHousehold.add_members(single_adult, 1);
+
+    auto singleAdultGroup = mio::abm::HouseholdGroup();
+    singleAdultGroup.add_households(singleAdultHousehold, n_households);
+    add_household_group_to_model(model, singleAdultGroup);
 
     // --- Type D: Senior & ELderly household (2 adult, no children) ---------------
     auto seniorAdultHousehold = mio::abm::Household();
