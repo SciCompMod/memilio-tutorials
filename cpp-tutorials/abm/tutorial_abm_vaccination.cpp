@@ -32,7 +32,7 @@
  * This tutorial demonstrates how to:
  *  1. Set vaccination protection parameters (InfectionProtectionFactor,
  *     SeverityProtectionFactor) per age group and virus variant.
- *  2. Run an age-prioritised vaccination campaign (elderly first).
+ *  2. Run an age-prioritized vaccination campaign (elderly first).
  *  3. Read real-world vaccination data from a JSON file
  *     (vacc_county_ageinf_ma7.json) and apply it day-by-day.
  *  4. Run the simulation and write results.
@@ -70,14 +70,14 @@ size_t rki_age_to_index(mio::AgeGroup age)
 //   date -> vector<uint32_t> (daily new first-dose vaccinations per age group).
 // Cumulative counts in the file are converted to daily increments.
 // Only first-dose ("Vacc_partially") data is used; boosters are ignored.
-// This mirrors prepare_vaccination_state() from the paper code.
+// This mirrors prepare_vaccination_state() from the paper
+// Kerkmann, Korf et al. (2025): https://doi.org/10.1016/j.compbiomed.2025.110269
 // ============================================================================
-std::map<mio::Date, std::vector<uint32_t>>
-prepare_vaccination_data(const std::string& filename, size_t num_age_groups,
-                         int county_id)
+std::map<mio::Date, std::vector<uint32_t>> prepare_vaccination_data(const std::string& filename, size_t num_age_groups,
+                                                                    int county_id)
 {
     // Previous day's cumulative first-dose count per age group.
-    // Initialised to UINT32_MAX so we can detect the very first entry and
+    // Initialized to UINT32_MAX so we can detect the very first entry and
     // use it as the baseline (its "delta" would otherwise be the entire
     // cumulative total, which is far too large).
     std::vector<uint32_t> prev(num_age_groups, std::numeric_limits<uint32_t>::max());
@@ -110,8 +110,7 @@ prepare_vaccination_data(const std::string& filename, size_t num_age_groups,
         }
 
         // Daily new first-dose = cumulative today – cumulative yesterday.
-        auto partial_new = static_cast<int>(entry.num_vaccinations_partial) -
-                           static_cast<int>(prev[age_idx]);
+        auto partial_new = static_cast<int>(entry.num_vaccinations_partial) - static_cast<int>(prev[age_idx]);
 
         vacc_map[entry.date][age_idx] = static_cast<uint32_t>(std::max(0, partial_new));
 
@@ -127,8 +126,7 @@ prepare_vaccination_data(const std::string& filename, size_t num_age_groups,
 // recipients per age group (no booster / second dose).
 // This mirrors assign_vaccination_state() from the paper code.
 // ============================================================================
-void apply_vaccination_data(mio::abm::Model& model, size_t num_age_groups,
-                            const mio::Date& sim_start_date,
+void apply_vaccination_data(mio::abm::Model& model, size_t num_age_groups, const mio::Date& sim_start_date,
                             const std::map<mio::Date, std::vector<uint32_t>>& vacc_map)
 {
     // Build per-age-group lists of person indices (unvaccinated pool).
@@ -167,18 +165,16 @@ void apply_vaccination_data(mio::abm::Model& model, size_t num_age_groups,
                 auto it            = persons_range.begin();
                 std::advance(it, pool[i]);
                 auto& person = *it;
-                    person.add_new_vaccination(
-                        mio::abm::ProtectionType::GenericVaccine, tp);
-                    // Remove vaccinated person from pool to avoid double-vaccination.
-                    pool.erase(pool.begin() + i);
-                    ++done;
+                person.add_new_vaccination(mio::abm::ProtectionType::GenericVaccine, tp);
+                // Remove vaccinated person from pool to avoid double-vaccination.
+                pool.erase(pool.begin() + i);
+                ++done;
             }
             total += done;
         }
     }
     size_t population = model.get_persons().size();
-    std::cout << "Data-driven vaccination: " << total << " out of " << population
-              << " persons vaccinated\n";
+    std::cout << "Total vaccinated (data-driven): " << total << " out of " << population << " persons vaccinated\n";
 }
 
 int main(int argc, char* argv[])
@@ -187,11 +183,12 @@ int main(int argc, char* argv[])
     //   vaccination_rate  : fraction of each age group vaccinated pre-sim (default: 0.0)
     //   n_households      : number of each household type               (default: 1000)
     //   protection_peak   : peak infection protection factor            (default: 0.67)
-    //   use_data_vacc     : 1 = apply JSON data-driven vaccination, 0 = skip (default: 1)
+    //   use_data_vacc     : 1 = apply JSON data-driven vaccination, 0 = skip (default: 0)
+    //                         Note that no vaccination takes place if json file should be used but cannot be found!
     double arg_vacc_rate       = (argc > 1) ? std::atof(argv[1]) : 0.0;
-    int    arg_n_households    = (argc > 2) ? std::atoi(argv[2]) : 1000;
+    int arg_n_households       = (argc > 2) ? std::atoi(argv[2]) : 1000;
     double arg_protection_peak = (argc > 3) ? std::atof(argv[3]) : 0.67;
-    int    arg_use_data_vacc   = (argc > 4) ? std::atoi(argv[4]) : 1;
+    int arg_use_data_vacc      = (argc > 4) ? std::atoi(argv[4]) : 0;
 
     // Suppress verbose log output; only warnings and errors are shown.
     mio::set_log_level(mio::LogLevel::warn);
@@ -216,8 +213,7 @@ int main(int argc, char* argv[])
     model.parameters.get<mio::abm::AgeGroupGotoSchool>()                    = false;
     model.parameters.get<mio::abm::AgeGroupGotoSchool>()[age_group_5_to_14] = true;
 
-    model.parameters.get<mio::abm::AgeGroupGotoWork>().set_multiple(
-        {age_group_15_to_34, age_group_35_to_59}, true);
+    model.parameters.get<mio::abm::AgeGroupGotoWork>().set_multiple({age_group_15_to_34, age_group_35_to_59}, true);
 
     // *** Set vaccination protection parameters. ***
     // Protection factors are piecewise-linear functions of days since
@@ -232,20 +228,17 @@ int main(int argc, char* argv[])
 
     for (auto age = mio::AgeGroup(0); age < mio::AgeGroup(num_age_groups); ++age) {
         // Infection protection: ramps up to 0.67 at day 14, wanes to 0.45 by day 180.
-        model.parameters.get<mio::abm::InfectionProtectionFactor>()[{
-            mio::abm::ProtectionType::GenericVaccine, age,
-            mio::abm::VirusVariant::Wildtype}] =
+        model.parameters.get<mio::abm::InfectionProtectionFactor>()[{mio::abm::ProtectionType::GenericVaccine, age,
+                                                                     mio::abm::VirusVariant::Wildtype}] =
             mio::TimeSeriesFunctor<ScalarType>{
                 mio::TimeSeriesFunctorType::LinearInterpolation,
                 {{0, 0.0}, {14, arg_protection_peak}, {180, arg_protection_peak * 0.67}}};
 
         // Severity protection: ramps up to 0.85 at day 14, wanes to 0.70 by day 180.
-        model.parameters.get<mio::abm::SeverityProtectionFactor>()[{
-            mio::abm::ProtectionType::GenericVaccine, age,
-            mio::abm::VirusVariant::Wildtype}] =
-            mio::TimeSeriesFunctor<ScalarType>{
-                mio::TimeSeriesFunctorType::LinearInterpolation,
-                {{0, 0.0}, {1, 0.85}, {180, 0.70}}};
+        model.parameters.get<mio::abm::SeverityProtectionFactor>()[{mio::abm::ProtectionType::GenericVaccine, age,
+                                                                    mio::abm::VirusVariant::Wildtype}] =
+            mio::TimeSeriesFunctor<ScalarType>{mio::TimeSeriesFunctorType::LinearInterpolation,
+                                               {{0, 0.0}, {1, 0.85}, {180, 0.70}}};
     }
 
     std::cout << "Vaccination protection factors configured.\n";
@@ -254,7 +247,7 @@ int main(int argc, char* argv[])
 
     // child: equally likely to be 0-4 or 5-14 years old (weights 1 and 1).
     auto child = mio::abm::HouseholdMember(num_age_groups);
-    child.set_age_weight(age_group_0_to_4,  1);
+    child.set_age_weight(age_group_0_to_4, 1);
     child.set_age_weight(age_group_5_to_14, 1);
 
     // parent: equally likely to be 15-34 or 35-59 years old.
@@ -276,7 +269,7 @@ int main(int argc, char* argv[])
 
     // --- Type A: two-person household (1 parent + 1 child) -------------------
     auto twoPersonHousehold = mio::abm::Household();
-    twoPersonHousehold.add_members(child,  1);
+    twoPersonHousehold.add_members(child, 1);
     twoPersonHousehold.add_members(parent, 1);
 
     auto twoPersonGroup = mio::abm::HouseholdGroup();
@@ -285,7 +278,7 @@ int main(int argc, char* argv[])
 
     // --- Type B: three-person household (2 parents + 1 child) ----------------
     auto threePersonHousehold = mio::abm::Household();
-    threePersonHousehold.add_members(child,  1);
+    threePersonHousehold.add_members(child, 1);
     threePersonHousehold.add_members(parent, 2);
 
     auto threePersonGroup = mio::abm::HouseholdGroup();
@@ -298,6 +291,10 @@ int main(int argc, char* argv[])
     auto singleAdultHousehold = mio::abm::Household();
     singleAdultHousehold.add_members(single_adult, 1);
 
+    auto singleAdultGroup = mio::abm::HouseholdGroup();
+    singleAdultGroup.add_households(singleAdultHousehold, n_households);
+    add_household_group_to_model(model, singleAdultGroup);
+
     // --- Type D: Senior & ELderly household (2 adult, no children) ---------------
     auto seniorAdultHousehold = mio::abm::Household();
     seniorAdultHousehold.add_members(senior_adult, 2);
@@ -308,10 +305,9 @@ int main(int argc, char* argv[])
 
     // *** Add locations (same as Tutorial 1). ***
 
-
     // One hospital and one ICU shared by all persons.
     auto hospital = model.add_location(mio::abm::LocationType::Hospital);
-    auto icu = model.add_location(mio::abm::LocationType::ICU);
+    auto icu      = model.add_location(mio::abm::LocationType::ICU);
 
     // One social event venue (e.g. a community centre).
     auto event = model.add_location(mio::abm::LocationType::SocialEvent);
@@ -325,36 +321,32 @@ int main(int argc, char* argv[])
     // One workplace for all working adults.
     auto work = model.add_location(mio::abm::LocationType::Work);
 
-
     // *** Assign initial infection states. ***
     //
     //  Index | InfectionState          | Probability
     //  ------|-------------------------|------------
     //    0   | Susceptible             | 0.80
-    //    1   | Exposed                 | 0.10
-    //    2   | InfectedNoSymptoms      | 0.01
-    //    3   | InfectedSymptoms        | 0.01
-    //    4   | InfectedSevere          | 0.01
-    //    5   | InfectedCritical        | 0.01
-    //    6   | Recovered               | 0.00
-    //    7   | Dead                    | 0.06
+    //    1   | Exposed                 | 0.05
+    //    2   | InfectedNoSymptoms      | 0.1
+    //    3   | InfectedSymptoms        | 0.5
+    //    4   | InfectedSevere          | 0.0
+    //    5   | InfectedCritical        | 0.0
+    //    6   | Recovered               | 0.0
+    //    7   | Dead                    | 0.0
     auto start_date = mio::abm::TimePoint(0); // t = 0 s from the simulation epoch
-    
-    std::vector<ScalarType> infection_distribution{0.8, 0.05, 0.1, 0.05, 0.00, 0.00, 0.00, 0.00};
+
+    std::vector<ScalarType> infection_distribution{0.8, 0.05, 0.1, 0.05, 0.0, 0.0, 0.0, 0.0};
 
     for (auto& person : model.get_persons()) {
         // Draw an infection state from the distribution above.
         mio::abm::InfectionState infection_state = mio::abm::InfectionState(
-            mio::DiscreteDistribution<size_t>::get_instance()(
-                mio::thread_local_rng(), infection_distribution));
-        
+            mio::DiscreteDistribution<size_t>::get_instance()(mio::thread_local_rng(), infection_distribution));
+
         auto rng = mio::abm::PersonalRandomNumberGenerator(person);
         if (infection_state != mio::abm::InfectionState::Susceptible) {
             // Infect an agent with the drawn state
-            person.add_new_infection(
-                mio::abm::Infection(rng, mio::abm::VirusVariant::Wildtype,
-                                    person.get_age(), model.parameters,
-                                    start_date, infection_state));
+            person.add_new_infection(mio::abm::Infection(rng, mio::abm::VirusVariant::Wildtype, person.get_age(),
+                                                         model.parameters, start_date, infection_state));
         }
     }
 
@@ -372,13 +364,12 @@ int main(int argc, char* argv[])
         if (person.get_age() == age_group_5_to_14) {
             model.assign_location(id, school);
         }
-        if (person.get_age() == age_group_15_to_34 ||
-            person.get_age() == age_group_35_to_59) {
+        if (person.get_age() == age_group_15_to_34 || person.get_age() == age_group_35_to_59) {
             model.assign_location(id, work);
         }
     }
 
-    // *** Vaccination: either age-prioritised campaign OR data-driven. ***
+    // *** Vaccination: either age-prioritized campaign OR data-driven. ***
     // argv[4] selects the mode:
     //   0 = campaign only  (use vaccination_rate to vaccinate before sim start)
     //   1 = data-driven    (read real vaccination counts from JSON file)
@@ -386,10 +377,9 @@ int main(int argc, char* argv[])
     if (!arg_use_data_vacc) {
         // ── Campaign mode ────────────────────────────────────────────
         // Vaccinate a fraction of each eligible age group at t = -20 days,
-        // prioritising elderly first.
+        // prioritizing elderly first.
         const double vaccination_rate = arg_vacc_rate;
-        const auto   vaccination_time = start_date - mio::abm::days(20);
-        auto population = 0;
+        const auto vaccination_time   = start_date - mio::abm::days(20);
         std::vector<std::vector<size_t>> persons_by_age(num_age_groups);
         {
             size_t idx = 0;
@@ -397,19 +387,16 @@ int main(int argc, char* argv[])
                 persons_by_age[person.get_age().get()].push_back(idx);
                 ++idx;
             }
-            population =0;
         }
-       
-        std::vector<mio::AgeGroup> vaccination_priority = {
-            age_group_80_plus, age_group_60_to_79, age_group_35_to_59, age_group_15_to_34};
+
+        std::vector<mio::AgeGroup> vaccination_priority = {age_group_80_plus, age_group_60_to_79, age_group_35_to_59,
+                                                           age_group_15_to_34};
 
         size_t total_vaccinated = 0;
         for (auto age : vaccination_priority) {
             auto& indices = persons_by_age[age.get()];
-            std::shuffle(indices.begin(), indices.end(),
-                         std::mt19937{std::random_device{}()});
-            size_t n_to_vaccinate = static_cast<size_t>(
-                std::round(vaccination_rate * indices.size()));
+            std::shuffle(indices.begin(), indices.end(), std::mt19937{std::random_device{}()});
+            size_t n_to_vaccinate = static_cast<size_t>(std::round(vaccination_rate * indices.size()));
 
             size_t count = 0;
             for (size_t i = 0; i < n_to_vaccinate; ++i) {
@@ -417,32 +404,30 @@ int main(int argc, char* argv[])
                 auto it            = persons_range.begin();
                 std::advance(it, indices[i]);
                 auto& person = *it;
-                if (person.get_infection_state(vaccination_time) ==
-                    mio::abm::InfectionState::Susceptible) {
-                    person.add_new_vaccination(
-                        mio::abm::ProtectionType::GenericVaccine, vaccination_time);
+                if (person.get_infection_state(vaccination_time) == mio::abm::InfectionState::Susceptible) {
+                    person.add_new_vaccination(mio::abm::ProtectionType::GenericVaccine, vaccination_time);
                     ++count;
                 }
             }
             total_vaccinated += count;
-            std::cout << "Vaccinated " << count << " persons in age group "
-                      << age.get() << "\n";
+            std::cout << "Vaccinated " << count << " persons in age group " << age.get() << "\n";
         }
-        std::cout << "Campaign total vaccinated: " << total_vaccinated << "out of " << population <<"\n";
+        auto population = model.get_persons().size();
+        std::cout << "Total vaccinated (campaign mode): " << total_vaccinated << " out of " << population << "\n";
     }
     else {
         // ── Data-driven mode ─────────────────────────────────────────
         // Read real-world vaccination counts from a JSON file and apply
         // them day-by-day to the model's persons.
-        const std::string vacc_json_path = "/Users/saschakorf/Documents/Promotion/memilio-tutorials/cpp-tutorials/abm/vacc_county_ageinf_ma7.json";
-        const int         county_id      = 1002;
-        const mio::Date   sim_start      = mio::Date(2020, 10, 1);
+        const std::string vacc_json_path =
+            "/Users/saschakorf/Documents/Promotion/memilio-tutorials/cpp-tutorials/abm/vacc_county_ageinf_ma7.json";
+        const int county_id       = 1002;
+        const mio::Date sim_start = mio::Date(2020, 10, 1);
 
         auto vacc_map = prepare_vaccination_data(vacc_json_path, num_age_groups, county_id);
 
         if (!vacc_map.empty()) {
-            std::cout << "Read " << vacc_map.size()
-                      << " days of vaccination data from " << vacc_json_path << "\n";
+            std::cout << "Read " << vacc_map.size() << " days of vaccination data from " << vacc_json_path << "\n";
             apply_vaccination_data(model, num_age_groups, sim_start, vacc_map);
         }
         else {
@@ -463,9 +448,7 @@ int main(int argc, char* argv[])
     // *** Write results to file. ***
     std::ofstream outfile("abm_vaccination.txt");
     std::get<0>(historyTimeSeries.get_log())
-        .print_table(outfile,
-                     {"S", "E", "I_NS", "I_Sy", "I_Sev", "I_Crit", "R", "D"},
-                     7, 4);
+        .print_table(outfile, {"S", "E", "I_NS", "I_Sy", "I_Sev", "I_Crit", "R", "D"}, 7, 4);
     std::cout << "Results written to abm_vaccination.txt\n";
 
     return 0;

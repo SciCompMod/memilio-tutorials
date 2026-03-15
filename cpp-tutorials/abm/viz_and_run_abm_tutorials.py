@@ -19,8 +19,8 @@ import os
 # ══════════════════════════════════════════════════════════════════════
 # CONFIGURATION – pick ONE tutorial and ONE run (1, 2, or 3)
 # ══════════════════════════════════════════════════════════════════════
-TUTORIAL = "household"       # "household", "testing", or "vaccination"
-RUN = 2               # 1, 2, or 3  (see tables below)
+TUTORIAL = "vaccination"       # "household", "testing", or "vaccination"
+RUN = 4               # 1, 2, 3, ...  (see tables below)
 
 # ── 3 runs per tutorial ──────────────────────────────────────────────
 #
@@ -111,8 +111,8 @@ ax.grid(True, alpha=0.3)
 ax.set_ylim(bottom=0)
 
 plt.tight_layout()
-outpng = os.path.join(fpath, f'abm_{TUTORIAL}_run{RUN}.png')
-plt.savefig(outpng, dpi=300, bbox_inches='tight')
+outpng = f'abm_{TUTORIAL}_run{RUN}.png'
+plt.savefig(f'abm_{TUTORIAL}_run{RUN}.png', dpi=300, bbox_inches='tight')
 print(f"\nFinal counts:\n{final.to_string()}")
-print(f"Plot saved at '{outpng}'")
+print(f"Plot saved at '{os.path.abspath(os.getcwd()) + '/' + outpng}'")
 plt.show()

@@ -150,6 +150,7 @@ int main(int argc, char* argv[])
     auto single_adult = mio::abm::HouseholdMember(num_age_groups);
     single_adult.set_age_weight(age_group_35_to_59, 1);
 
+    // senior: equally likely to be 60-79 or 80+ years old.
     auto senior_adult = mio::abm::HouseholdMember(num_age_groups);
     senior_adult.set_age_weight(age_group_60_to_79, 1);
     senior_adult.set_age_weight(age_group_80_plus, 1);
@@ -180,6 +181,10 @@ int main(int argc, char* argv[])
     // weight 1 only for age_group_35_to_59.
     auto singleAdultHousehold = mio::abm::Household();
     singleAdultHousehold.add_members(single_adult, 1);
+
+    auto singleAdultGroup = mio::abm::HouseholdGroup();
+    singleAdultGroup.add_households(singleAdultHousehold, n_households);
+    add_household_group_to_model(model, singleAdultGroup);
 
     // --- Type D: Senior & ELderly household (2 adult, no children) ---------------
     auto seniorAdultHousehold = mio::abm::Household();
@@ -217,17 +222,17 @@ int main(int argc, char* argv[])
     //
     //  Index | InfectionState          | Probability
     //  ------|-------------------------|------------
-    //    0   | Susceptible             | 0.80
-    //    1   | Exposed                 | 0.10
-    //    2   | InfectedNoSymptoms      | 0.01
-    //    3   | InfectedSymptoms        | 0.01
-    //    4   | InfectedSevere          | 0.01
-    //    5   | InfectedCritical        | 0.01
-    //    6   | Recovered               | 0.00
-    //    7   | Dead                    | 0.06
+    //    0   | Susceptible             | 0.8
+    //    1   | Exposed                 | 0.05
+    //    2   | InfectedNoSymptoms      | 0.1
+    //    3   | InfectedSymptoms        | 0.05
+    //    4   | InfectedSevere          | 0.0
+    //    5   | InfectedCritical        | 0.0
+    //    6   | Recovered               | 0.0
+    //    7   | Dead                    | 0.0
     auto start_date = mio::abm::TimePoint(0); // t = 0 s from the simulation epoch
 
-    std::vector<ScalarType> infection_distribution{0.8, 0.05, 0.1, 0.05, 0.00, 0.00, 0.00, 0.00};
+    std::vector<ScalarType> infection_distribution{0.8, 0.05, 0.1, 0.05, 0.0, 0.0, 0.0, 0.0};
 
     for (auto& person : model.get_persons()) {
         // Draw an infection state from the distribution above.
