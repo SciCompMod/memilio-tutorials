@@ -171,7 +171,7 @@ def _(dt, model, osecir, t0, tmax):
     result = osecir.simulate(t0, tmax, dt, model)
     # Interpolate result to full days
     interpolated_result = osecir.interpolate_simulation_result(result)
-    interpolated_result.print_table()
+    print(interpolated_result.print_table(return_string=True))
     return (result,)
 
 

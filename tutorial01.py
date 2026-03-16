@@ -221,7 +221,7 @@ def _(mo):
 
 @app.cell
 def _(result):
-    result.print_table()
+    print(result.print_table(return_string=True))
     return
 
 
@@ -251,7 +251,7 @@ def _(mo):
 
 @app.cell
 def _(interpolated_result):
-    interpolated_result.print_table()
+    print(interpolated_result.print_table(return_string=True))
     return
 
 
