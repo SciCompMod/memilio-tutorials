@@ -4,10 +4,12 @@
 
 int main()
 {
-    // In the previous tutorial, we created, initialized and simulated MEmilio's ODE-based SECIR-type model with one (age) group. In this tutorial, we will show how to incorporate non-pharmaceutical interventions (NPIs) through the use of `Dampings` in the ODE-based SECIR-type model.
+    // In the previous tutorial, we created, initialized and simulated MEmilio's ODE-based SECIR-type model with one
+    // (age) group. In this tutorial, we will show how to incorporate non-pharmaceutical interventions (NPIs) through
+    // the use of `Dampings` in the ODE-based SECIR-type model.
 
     // *** Set up model. ***
-    // First we create and initialize a SECIR-type model with one age group. For a detailed description on taht, see Tutorial 1.
+    // First we create and initialize a SECIR-type model with one age group. For a detailed description, see Tutorial 1.
     size_t num_agegroups        = 1;
     ScalarType total_population = 100000;
     ScalarType t0               = 0;
@@ -39,13 +41,22 @@ int main()
 
     // EXERCISE: Please set the model's contact frequency to 10.
 
-    // After the model initialization, we add a contact reduction (`Damping`) that represents an NPI like e.g. mask wearing or social distancing. Dampings are a factor applied to the contact frequency and can be added to the model at fixed simulation time points before simulating. They have a *Level* and a *Type*. A damping with a given level and type replaces the previously active one with the same level and type, while all currently active dampings of one level and different types are summed up. If two dampings have different levels (independent of the type) they are combined multiplicatively. In the following we apply a `Damping` of 0.9 after 10 days and another damping of 0.6 after 20 days which means that the contacts are reduced by 10% and 40%, respectively. To always retain a minimum level of contacts, a minimum contact frequency can be set that is never deceeded. In our example we set this minimum contact rate to 0.
+    // After the model initialization, we add a contact reduction (`Damping`) that represents an NPI like
+    //  mask wearing or social distancing. Dampings are a factor applied to the contact frequency and can be added
+    // to the model at fixed simulation time points before simulating. They have a *Level* and a *Type*.
+    // A damping with a given level and type replaces the previously active one with the same level and type, while
+    // all currently active dampings of one level and different types are summed up. If two dampings have different
+    // levels (independent of the type) they are combined multiplicatively. In the following we apply a `Damping`
+    // of 0.9 after 10 days and another damping of 0.6 after 20 days which means that the contacts are reduced
+    // by 10% and 40%, respectively. To always retain a minimum level of contacts, a minimum contact frequency can
+    // be set that is never deceeded. In our example we set this minimum contact rate to 0.
     contact_matrix[0].add_damping(0.9, mio::SimulationTime<ScalarType>(10.));
     contact_matrix[0].add_damping(0.6, mio::SimulationTime<ScalarType>(20.));
 
     //EXERCISE: Please create a damping that replaces the 10% reduction after 10 days by a 20% reduction. Additionally, add a damping after 40 days that increases the contact rate by 50%.
 
-    // Again, we start with 0.5% of the population initially in `Exposed` and 0.5% initially in `InfectedNoSymptoms` while the remaining 99% is `Susceptible`.
+    // Again, we start with 0.5% of the population initially in `Exposed` and 0.5% initially in `InfectedNoSymptoms`
+    // while the remaining 99% is `Susceptible`.
     model.populations[{mio::AgeGroup(0), mio::osecir::InfectionState::Exposed}]            = 0.005 * total_population;
     model.populations[{mio::AgeGroup(0), mio::osecir::InfectionState::InfectedNoSymptoms}] = 0.005 * total_population;
     model.populations.set_difference_from_total({mio::AgeGroup(0), mio::osecir::InfectionState::Susceptible},
@@ -61,4 +72,9 @@ int main()
 
     // We export the results as csv which is saved in the current folder. Then we can plot the results using plot_secir_results.py.
     auto export_status = result.export_csv("../../cpp-tutorials/exercises/results_ode_npis.csv");
+
+    //Try yourself
+    // After having learned how to use dampings, you can now try out yourself. Some suggestions what you can try are:
+    // - **Lifting non-pharmaceutical interventions (NPIs)**: Can you temporarily implement an NPI and lift it again after 2 weeks?
+    // - **Increasing contact rates**: Increase the contact rate after 20 days. What does this do to the simulated disease spread?
 }

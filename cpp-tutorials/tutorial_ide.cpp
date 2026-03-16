@@ -78,7 +78,7 @@ int main()
     // After having initialized the model, we now set the epidemiological parameters.
     // We start with setting the transition distributions between the InfectionStates. With this, we define the times
     // individuals spend on average in the respective InfectionStates.
-    // We start by defining a SmootherCosine object that is defined by an initial distribtion parameter.
+    // We start by defining a SmootherCosine object that is defined by an initial distribution parameter.
     mio::SmootherCosine<ScalarType> smoothcos(4.0);
     // This is passed to a StateAgeFunctionWrapper object which is the type of oject used within the model to allow
     // for variable transition distributions.

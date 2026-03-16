@@ -12,10 +12,10 @@
 //
 // Large-scale studies, such as the POLYMOD project, have measured social contact patterns across different
 // locations (like home, school, work, and others) in various countries. For instance, see
-//   Mossong J, Hens N, Jit M, Beutels P, Auranen K, et al. (2008) Social Contacts and Mixing Patterns Relevant to the Spread of Infectious Diseases.
-//               PLoS Med 5(3): e74. https://doi.org/10.1371/journal.pmed.0050074
-//   Prem K, Cook AR, Jit M (2017) Projecting social contact matrices in 152 countries using contact surveys and demographic data.
-//               PLoS Comput Biol 13(9): e1005697. https://doi.org/10.1371/journal.pcbi.1005697
+//   Mossong J, Hens N, Jit M, Beutels P, Auranen K, et al. (2008) Social Contacts and Mixing Patterns Relevant to
+//               the Spread of Infectious Diseases. PLoS Med 5(3): e74. https://doi.org/10.1371/journal.pmed.0050074
+//   Prem K, Cook AR, Jit M (2017) Projecting social contact matrices in 152 countries using contact surveys and
+//               demographic data. PLoS Comput Biol 13(9): e1005697. https://doi.org/10.1371/journal.pcbi.1005697
 //
 // In this tutorial, we extend the approach from Tutorial 3 by splitting the contact matrix into
 // location-specific contact matrices using ContactMatrixGroup. This allows us to apply NPIs to individual

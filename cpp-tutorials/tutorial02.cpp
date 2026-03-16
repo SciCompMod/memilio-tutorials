@@ -61,7 +61,11 @@ int main()
 
     // *** Simulate flows. ***
     // Instead of using `simulate`, we now use `simulate_flows`.
-    // This function integrates the transition rates between compartments. The result is a vector which containts the compartment states as first element, and the cumulative flows between compartments as the second element. The cumulative flows are the total number of transitions that have occurred between compartments up to that point in time. The compartment states are the same as the output of `simulate`. Note that the entries of the vectors are `TimeSeries` objects.
+    // This function integrates the transition rates between compartments. The result is a vector which contains
+    // the compartment states as first element, and the cumulative flows between compartments as the second element.
+    // The cumulative flows are the total number of transitions that have occurred between compartments up to that
+    //point in time. The compartment states are the same as the output of `simulate`. Note that the entries of the
+    // vectors are `TimeSeries` objects.
     std::vector<mio::TimeSeries<ScalarType>> results = mio::osecir::simulate_flows<ScalarType>(t0, tmax, dt, model);
 
     const auto& compartments     = results[0]; // compartments
@@ -117,7 +121,7 @@ int main()
     // Daily incidence table (rows = days 1..tmax, columns = new symptomatic / new hospitalized).
     // Note: the adaptive integrator may make time steps which are larger than 1 day. Following, interpolate_simulation_result
     // then fills missing days by linear interpolation of the cumulative flows, producing constant values in the
-    // daily differences. 
+    // daily differences.
     daily_incidences.print_table({"New_Symptomatic", "New_Hospitalized"}, 20, 4);
 
     // *** Optional: export to CSV for plotting in Python (see tutorial2.py for the corresponding visualization). ***

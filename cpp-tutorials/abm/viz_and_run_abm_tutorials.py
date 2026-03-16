@@ -20,7 +20,7 @@ import os
 # CONFIGURATION – pick ONE tutorial and ONE run (1, 2, or 3)
 # ══════════════════════════════════════════════════════════════════════
 TUTORIAL = "vaccination"       # "household", "testing", or "vaccination"
-RUN      = 4               # 1, 2, or 3  (see tables below)
+RUN = 4               # 1, 2, 3, ...  (see tables below)
 
 # ── 3 runs per tutorial ──────────────────────────────────────────────
 #
@@ -67,12 +67,12 @@ _config = {
     "vaccination": {"exe": "tutorial_abm_vaccination",  "file": "abm_vaccination.txt",   "title": "Tutorial 3 – Vaccination"},
 }
 
-cfg       = _config[TUTORIAL]
-run_cfg   = RUNS[TUTORIAL][RUN]
-root_dir  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-bin_dir   = os.path.join(root_dir, "build", "bin")
-exe_path  = os.path.join(bin_dir, cfg["exe"])
-fpath     = os.path.join(bin_dir, cfg["file"])
+cfg = _config[TUTORIAL]
+run_cfg = RUNS[TUTORIAL][RUN]
+root_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+bin_dir = os.path.join(root_dir, "build", "bin")
+exe_path = os.path.join(bin_dir, cfg["exe"])
+fpath = os.path.join(bin_dir, cfg["file"])
 
 # ── Run the executable ────────────────────────────────────────────────
 cmd = [exe_path] + run_cfg["args"]
@@ -88,7 +88,8 @@ data = pd.read_csv(fpath, sep=r'\s+')
 
 # ── Infection-state columns & colours ─────────────────────────────────
 states = ['S', 'E', 'I_NS', 'I_Sy', 'I_Sev', 'I_Crit', 'R', 'D']
-colors = ['blue', 'orange', 'gold', 'red', 'darkred', 'purple', 'green', 'black']
+colors = ['blue', 'orange', 'gold', 'red',
+          'darkred', 'purple', 'green', 'black']
 labels = ['Susceptible', 'Exposed', 'Infected (No Symptoms)',
           'Infected (Symptomatic)', 'Infected (Severe)',
           'Infected (Critical)', 'Recovered', 'Dead']
@@ -111,7 +112,7 @@ ax.set_ylim(bottom=0)
 
 plt.tight_layout()
 outpng = f'abm_{TUTORIAL}_run{RUN}.png'
-plt.savefig(outpng, dpi=300, bbox_inches='tight')
+plt.savefig(f'abm_{TUTORIAL}_run{RUN}.png', dpi=300, bbox_inches='tight')
 print(f"\nFinal counts:\n{final.to_string()}")
-print(f"Plot saved as '{outpng}'")
+print(f"Plot saved at '{os.path.abspath(os.getcwd()) + '/' + outpng}'")
 plt.show()
