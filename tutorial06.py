@@ -421,7 +421,7 @@ def _(mo):
     mo.md(r"""
     # Inference process
 
-    With all the previous work done, there are only four more lines of code needed to run the inference process. First, we need to create the fitting object. It is called `ABCSMC` because we perform the fitting using Approximate Bayesian Computation - Sequential Monte Carlo. The object is created by giving it our simulation function, the prior and the distance. We set the population size to 300. This will reduce the chance of numerical instabilites. There are more possible parameters for which we will just use the defaults. The full documentation is available [here](https://pyabc.readthedocs.io/en/latest/api/pyabc.inference.html#pyabc.inference.ABCSMC).
+    With all the previous work done, there are only four more lines of code needed to run the inference process. First, we need to create the fitting object. It is called `ABCSMC` because we perform the fitting using Approximate Bayesian Computation - Sequential Monte Carlo. The object is created by giving it our simulation function, the prior and the distance. We set the population size to 600. This will reduce the chance of numerical instabilites. There are more possible parameters for which we will just use the defaults. The full documentation is available [here](https://pyabc.readthedocs.io/en/latest/api/pyabc.inference.html#pyabc.inference.ABCSMC).
 
     Then we need to define a database path. `pyabc` stores all simulations in a database. This allows us to take a closer look at them after the inference. However, here we will use a temporary directory to store the database. Once we found that folder, we need to create the database before finally running the inference.
     One important question is for how long to run the inference. Here, we will simply set a `max_nr_populations` of 6. Then the inference is stopped once it has optimized for six iterations. While this is not a very good stopping criteria, we use it here to reduce the run time. You are free to replace that by any other stopping criteria as explained in the [pyabc documentation](https://pyabc.readthedocs.io/en/latest/index.html).
@@ -440,7 +440,7 @@ def _(
     run_simulation,
     tempfile,
 ):
-    abc = pyabc.ABCSMC(run_simulation, prior, distance_function, population_size=300)
+    abc = pyabc.ABCSMC(run_simulation, prior, distance_function, population_size=600)
     db_path = "sqlite:///" + os.path.join(tempfile.gettempdir(), "tmp.db")
     abc.new(db_path, observation_data)
     return (abc,)
