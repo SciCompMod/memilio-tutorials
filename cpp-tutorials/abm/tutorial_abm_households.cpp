@@ -24,8 +24,8 @@
  *
  * MEmilio provides an agent-based model (ABM) where each individual ("agent")
  * has an age, a home, and assigned locations they visit during the day.
- * Agents transition between infection states (Susceptible, Exposed, ..., Dead)
- * based on stochastic contact events at their current location.
+ * Agents' transitions between infection states (Susceptible, Exposed, ..., Dead)
+ * are based on stochastic contact events at their current location.
  *
  * This tutorial demonstrates how to:
  *  1. Define age groups and configure model parameters.
@@ -37,9 +37,9 @@
  *
  * Key concept -- HouseholdMember age weights:
  *   Each HouseholdMember carries an integer weight for every AgeGroup.
- *   When a person is created for that member slot, the model draws its age
+ *   When a person is created as a HouseholdMember, the model draws its age
  *   from a discrete distribution proportional to these weights.
- *   Example: weights {1, 1, 0, 0} give a 50/50 chance of AgeGroup 0 or 1.
+ *   Example: weights {1, 1, 0, 0} gives a 50/50 chance of AgeGroup 0 or 1.
  */
 
 #include "abm/household.h"
@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
 {
     // Usage: tutorial_abm_household [n_households] [infected_frac] [sim_days]
     //   n_households  : number of each household type           (default: 125)
-    //   infected_frac : fraction initially infected             (default: 0.2)
+    //   infected_frac : fraction of initially infected             (default: 0.2)
     //   sim_days      : simulation duration in days             (default: 30)
     int arg_n_households     = (argc > 1) ? std::atoi(argv[1]) : 125;
     double arg_infected_frac = (argc > 2) ? std::atof(argv[2]) : 0.2;
@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
     const auto age_group_80_plus  = mio::AgeGroup(5); // elderly
 
     // *** Create the model and set infection parameters. ***
-    // The Model holds all persons, locations, and parameters. We pass in the
+    // The Model holds all persons, locations, and parameters. We hand over the
     // number of age groups so that all parameter arrays are sized correctly.
     // `set_local_parameters` and `set_world_parameters` fill in realistic
     // epidemiological values (see parameter_setter.h).
@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
 
     // *** Compose households and add them to the model. ***
     // A Household collects (member_type, count) pairs. A HouseholdGroup bundles
-    // many copies of a Household template. `add_household_group_to_model`
+    // many copies of a Household template. `add_household_group_to_model`,
     // creates the actual persons and their home locations.
     //
     // CLI parameters (see usage at top of main):
@@ -190,7 +190,7 @@ int main(int argc, char* argv[])
     // *** Assign initial infection states. ***
     // Each person draws a random infection state from the distribution below.
     // Persons who are not Susceptible receive a full Infection object so their
-    // viral-load course and state transitions are properly initialised.
+    // viral-load course and state transitions are properly initialized.
     //
     //  Index | InfectionState                 | Probability
     //  ------|--------------------------------|------------
@@ -202,7 +202,7 @@ int main(int argc, char* argv[])
     //    5   | InfectedCritical   (I_Crit)    | 0.0
     //    6   | Recovered                      | 0.0
     //    7   | Dead                           | 0.0
-    auto start_date = mio::abm::TimePoint(0); // t = 0 s from the simulation epoch
+    auto start_date = mio::abm::TimePoint(0); // t = 0
 
     // Build infection distribution from the infected fraction.
     // The non-susceptible portion is split: 25% Exposed, 50% I_NS, 25% I_Sy.
