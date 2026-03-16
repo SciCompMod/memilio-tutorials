@@ -98,6 +98,7 @@ def _(mo):
 @app.cell
 def _(model):
     constraints_violated = model.check_constraints()
+    print(constraints_violated)
     return
 
 
@@ -236,7 +237,7 @@ def _(compartments, daily_flows, osecir, plot_time, plt):
     # Combine legends from both axes
     lines_1, labels_1 = ax[1].get_legend_handles_labels()
     lines_2, labels_2 = ax2.get_legend_handles_labels()
-    ax2.legend(lines_1 + lines_2, labels_1 + labels_2, loc='center right')
+    ax2.legend(lines_1 + lines_2, labels_1 + labels_2, loc='upper right')
 
     plt.tight_layout()
     plt.show()
