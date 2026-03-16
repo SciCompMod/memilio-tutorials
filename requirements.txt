@@ -4,4 +4,3 @@ pandas
 numpy
 pyabc
 pyarrow
---index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ memilio-simulation
