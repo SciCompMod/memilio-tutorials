@@ -419,8 +419,7 @@ int main(int argc, char* argv[])
         // ── Data-driven mode ─────────────────────────────────────────
         // Read real-world vaccination counts from a JSON file and apply
         // them day-by-day to the model's persons.
-        const std::string vacc_json_path =
-            "/Users/saschakorf/Documents/Promotion/memilio-tutorials/cpp-tutorials/abm/vacc_county_ageinf_ma7.json";
+        const std::string vacc_json_path = "./vacc_county_ageinf_ma7.json";
         const int county_id       = 1002;
         const mio::Date sim_start = mio::Date(2020, 10, 1);
 
