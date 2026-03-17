@@ -170,7 +170,7 @@ def _(mo):
 def _(dt, model, osecir, t0, tmax):
     # Simulate model from t0 to tmax with initial step size dt
     result = osecir.simulate(t0, tmax, dt, model)
-    result.print_table()
+    print(result.print_table(return_string=True))
     return (result,)
 
 
@@ -186,7 +186,7 @@ def _(mo):
 def _(osecir, result):
     # Interpolate result to full days
     interpolated_result = osecir.interpolate_simulation_result(result)
-    interpolated_result.print_table()
+    print(interpolated_result.print_table(return_string=True))
     return
 
 
