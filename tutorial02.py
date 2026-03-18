@@ -47,7 +47,7 @@ def _(mo):
 def _(np):
     import memilio.simulation.osecir as osecir
     from memilio.simulation import AgeGroup, LogLevel, set_log_level
-    set_log_level(LogLevel.Off)
+    set_log_level(LogLevel.Error)
 
     # Initialize total population, simulation start time, timeframe, and step size
     total_population = 100000
