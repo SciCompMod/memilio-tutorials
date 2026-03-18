@@ -105,7 +105,7 @@ def _():
 @app.cell
 def _(mo):
     mo.md(r"""
-    After the model initialization, we add a contact reduction (`Damping`) that represents an NPI like e.g. mask wearing or social distancing. Dampings are a factor applied to the contact frequency and can be added to the model at fixed simulation time points before simulating. They have a *Level* and a *Type*. A damping with a given level and type replaces the previously active one with the same level and type, while all currently active dampings of one level and different types are summed up. If two dampings have different levels (independent of the type) they are combined multiplicatively. In the following we apply a `Damping` of 0.9 after 10 days and another damping of 0.6 after 20 days which means that the contacts are reduced by 10% and 40%, respectively. In general, it is also possible to increase the contact rate by using Damping values greater than 1. To always retain a minimum level of contacts, a minimum contact frequency can be set that is never deceeded. In our example we set this minimum contact rate to 0.
+    After the model initialization, we add a contact reduction (`Damping`) that represents an NPI like e.g. mask wearing or social distancing. Dampings are a factor applied to the contact frequency and can be added to the model at fixed simulation time points before simulating. They have a *Level* and a *Type*. A damping with a given level and type replaces the previously active one with the same level and type, while all currently active dampings of one level and different types are summed up. If two dampings have different levels (independent of the type) they are combined multiplicatively. In the following we apply a `Damping` of 0.9 after 10 days and another damping of 0.6 after 20 days which means that the contacts are reduced by 90% and 60%, respectively. In general, it is also possible to increase the contact rate by using negative Damping values. To always retain a minimum level of contacts, a minimum contact frequency can be set that is never deceeded. In our example we set this minimum contact rate to 0.
     """)
     return
 
@@ -115,9 +115,9 @@ def _(Damping, model, np):
     # Set minimum contact frequency
     model.parameters.ContactPatterns.cont_freq_mat[0].minimum = np.zeros((1, 1))
 
-    # Add contact reduction by 10% after 10 days
+    # Add contact reduction by 90% after 10 days
     model.parameters.ContactPatterns.cont_freq_mat.add_damping(Damping(coeffs=np.ones((1, 1)) * 0.9, t=10.0, level=0, type=0))
-    # Add contact reduction by 40% after 20 days
+    # Add contact reduction by 60% after 20 days
     model.parameters.ContactPatterns.cont_freq_mat.add_damping(Damping(coeffs=np.ones((1, 1)) * 0.6, t=20.0, level=0, type=0))
     return
 
@@ -126,7 +126,7 @@ def _(Damping, model, np):
 def _(mo):
     mo.md(r"""
     ### Exercise
-    Please create a damping that replaces the 10% reduction after 10 days by a 20% reduction. Additionally, add a damping after 40 days that increases the contact rate by 50%.
+    Please create a damping that replaces the 90% reduction after 10 days by a 20% reduction. Additionally, add a damping after 40 days that increases the contact rate by 50%.
     """)
     return
 
@@ -170,7 +170,7 @@ def _(mo):
 def _(dt, model, osecir, t0, tmax):
     # Simulate model from t0 to tmax with initial step size dt
     result = osecir.simulate(t0, tmax, dt, model)
-    result.print_table()
+    print(result.print_table(return_string=True))
     return (result,)
 
 
@@ -186,7 +186,7 @@ def _(mo):
 def _(osecir, result):
     # Interpolate result to full days
     interpolated_result = osecir.interpolate_simulation_result(result)
-    interpolated_result.print_table()
+    print(interpolated_result.print_table(return_string=True))
     return
 
 
