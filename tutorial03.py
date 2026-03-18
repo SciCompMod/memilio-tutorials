@@ -100,9 +100,9 @@ def _(Damping, model, np):
     # Set minimum contact frequency
     model.parameters.ContactPatterns.cont_freq_mat[0].minimum = np.zeros((1, 1))
 
-    # Add contact reduction by 10% after 10 days
+    # Add contact reduction by 90% after 10 days
     model.parameters.ContactPatterns.cont_freq_mat.add_damping(Damping(coeffs=np.ones((1, 1)) * 0.9, t=10.0, level=0, type=0))
-    # Add contact reduction by 40% after 20 days
+    # Add contact reduction by 60% after 20 days
     model.parameters.ContactPatterns.cont_freq_mat.add_damping(Damping(coeffs=np.ones((1, 1)) * 0.6, t=20.0, level=0, type=0))
     return
 

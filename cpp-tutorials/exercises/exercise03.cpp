@@ -48,12 +48,12 @@ int main()
     // all currently active dampings of one level and different types are summed up. If two dampings have different
     // levels (independent of the type) they are combined multiplicatively. In the following we apply a `Damping`
     // of 0.9 after 10 days and another damping of 0.6 after 20 days which means that the contacts are reduced
-    // by 10% and 40%, respectively. To always retain a minimum level of contacts, a minimum contact frequency can
+    // by 90% and 60%, respectively. To always retain a minimum level of contacts, a minimum contact frequency can
     // be set that is never deceeded. In our example we set this minimum contact rate to 0.
     contact_matrix[0].add_damping(0.9, mio::SimulationTime<ScalarType>(10.));
     contact_matrix[0].add_damping(0.6, mio::SimulationTime<ScalarType>(20.));
 
-    //EXERCISE: Please create a damping that replaces the 10% reduction after 10 days by a 20% reduction. Additionally, add a damping after 40 days that increases the contact rate by 50%.
+    //EXERCISE: Please create a damping that replaces the 90% reduction after 10 days by a 20% reduction. Additionally, add a damping after 40 days that increases the contact rate by 50%.
 
     // Again, we start with 0.5% of the population initially in `Exposed` and 0.5% initially in `InfectedNoSymptoms`
     // while the remaining 99% is `Susceptible`.
