@@ -126,9 +126,9 @@ def _(AgeGroup, Location, mio, np, osecir, total_population):
         # EXERCISE: Set up the ContactMatrix for each location with the correct baseline and
         # (where applicable) minimum values. The baselines should sum to 10 contacts/day.
         #   Home:   baseline = 4, minimum = 1  (irreducible household contacts)
-        #   School: baseline = 3
-        #   Work:   baseline = 2
-        #   Other:  baseline = 1
+        #   School: baseline = 3, minimum = 0
+        #   Work:   baseline = 2, minimum = 0
+        #   Other:  baseline = 1, minimum = 0
         # Hint: mio.ContactMatrix(np.array([[baseline]]), np.array([[minimum]]))
         # contacts[Location.Home]   = ???
         # contacts[Location.School] = ???
@@ -177,7 +177,7 @@ def _(mo):
     |--------------------------|----------|-------------|--------------------------------------------|
     | School closure           | School   | 1.0         | All school contacts eliminated             |
     | Home-office mandate      | Work     | 0.5         | Work contacts reduced by 50 %              |
-    | Public transport restriction    | Other    | 0.8         | Other contacts reduced by 80 %        |
+    | Public transport restriction and venue closures    | Other    | 0.8         | Other contacts reduced by 80 %        |
 
     The key difference from Tutorial 3 is that each `Damping` is applied to a **specific location matrix** by indexing `cont_freq_mat[location_index]` before calling `add_damping`. In Tutorial 3, `add_damping` was called on the whole group, reducing **all** contact matrices simultaneously. Home contacts are left unrestricted here, but they cannot fall below the minimum of 1 contact/day regardless.
     """)
@@ -191,9 +191,9 @@ def _(Damping, Location, create_model, np):
     model_with_npi = create_model()
 
     # EXERCISE: Add the three location-specific dampings that take effect at t_npi_start:
-    #   School closure:               D = 1.0  (all school contacts eliminated)
-    #   Home-office mandate:          D = 0.5  (work contacts halved)
-    #   Public transport restriction: D = 0.8  (other contacts reduced by 80 %)
+    #   School closure:               D = 1.0  (all School contacts eliminated)
+    #   Home-office mandate:          D = 0.5  (Work contacts halved)
+    #   Public transport restriction: D = 0.8  (Other contacts reduced by 80 %)
     # Hint: model_with_npi.parameters.ContactPatterns.cont_freq_mat[Location.School].add_damping(
     #           Damping(coeffs=np.ones((1, 1)) * <D>, t=t_npi_start, level=0, type=0))
     # ???
