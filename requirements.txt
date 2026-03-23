@@ -4,3 +4,4 @@ pandas
 numpy
 pyabc
 pyarrow
+bayesflow
