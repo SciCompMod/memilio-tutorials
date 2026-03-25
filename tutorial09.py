@@ -37,7 +37,7 @@ def _(mo):
 
     In this notebook we tackle a real-world modelling task: inferring epidemic parameters from observed case data in order to characterise the ongoing outbreak and support decision-making. Concretely, we want to estimate when and how strongly contact-reducing interventions took effect in each of five German regions, using only the reported ICU and death counts.
 
-    This is the third in a series of three notebooks introducing Approximate Bayesian Computation with MEmilio. In the first two notebooks we calibrated simple single-region compartmental models. Here we extend the approach to a **metapopulation model** that resolves spatial heterogeneity across Germany.
+    This is the third in a series of three notebooks introducing fitting methods with MEmilio. In the first two notebooks we calibrated simple single-region compartmental models. Here we extend the approach to a **metapopulation model** that resolves spatial heterogeneity across Germany.
 
     We use [BayesFlow](https://bayesflow.org/main/index.html), a Python library for simulation-based inference with deep learning, as our inference method. This notebook is not a general tutorial on Neural Parameter Estimation with BayesFlow — for that we refer to the [BayesFlow documentation](https://bayesflow.org/main/user_guide/introduction.html) and the primary literature. Our focus is on showing how MEmilio and BayesFlow work together.
     """)
@@ -595,9 +595,25 @@ def _(workflow):
 @app.cell
 def _(mo):
     mo.md(r"""
+    After training, run `workflow.plot_default_diagnostics()` and check that the calibration looks reasonable before proceeding to inference. For a full explanation of each diagnostic and its interpretation, see the [BayesFlow documentation](https://bayesflow.org/api/bayesflow.diagnostics.html).
+    """)
+    return
+
+
+@app.cell
+def _(mo, workflow):
+    plots = workflow.plot_default_diagnostics(test_data=100, calibration_ecdf_kwargs={
+                                              'difference': True, 'stacked': True})
+    mo.vstack([plot for plot in plots.values()])
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
     # Inference on the Outbreak Data
 
-    With a trained and validated approximator in hand, we can now turn to the actual outbreak data. We load the observed ICU and death counts and pass them to the workflow. Posterior samples are drawn in a single forward pass — this is the payoff of amortized inference: no matter how long training took, each new inference is essentially free.
+    With a trained and validated approximator in hand, we can now turn to the actual outbreak data. We load the observed ICU and death counts and pass them to the workflow. With the CouplingFlow network, posterior samples are drawn in a single forward pass — this is the payoff of amortized inference: no matter how long training took, each new inference is essentially free.
 
     The posterior samples are then fed back into the simulator to produce a **posterior predictive distribution**: an ensemble of epidemic trajectories consistent with both the model and the observed data. This allows us to assess model fit and quantify forecast uncertainty.
     """)
