@@ -5,3 +5,4 @@ numpy
 pyabc
 pyarrow
 bayesflow
+tensorflow
