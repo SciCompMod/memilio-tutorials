@@ -60,7 +60,7 @@ def _(AgeGroup, np, osecir):
     t0 = 0
     tmax = 100
     dt = 0.1
-    contact_frequency = 10
+    contact_frequency = 5
 
     # Create model with one age group
     model = osecir.Model(1)
@@ -83,7 +83,7 @@ def _(AgeGroup, np, osecir):
     model.parameters.DeathsPerCritical[group] = 0.3
 
     # Set contact frequency
-    model.parameters.ContactPatterns.cont_freq_mat[0].baseline = np.ones((1, 1)) * 5
+    model.parameters.ContactPatterns.cont_freq_mat[0].baseline = np.ones((1, 1)) * contact_frequency
     return dt, group, model, t0, tmax, total_population
 
 

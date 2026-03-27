@@ -83,7 +83,7 @@ def _(AgeGroup, np, osecir):
     model.parameters.DeathsPerCritical[group] = 0.3
 
     # Set contact frequency
-    model.parameters.ContactPatterns.cont_freq_mat[0].baseline = np.ones((1, 1)) * 10
+    model.parameters.ContactPatterns.cont_freq_mat[0].baseline = np.ones((1, 1)) * contact_frequency
     return dt, group, model, t0, tmax, total_population
 
 
