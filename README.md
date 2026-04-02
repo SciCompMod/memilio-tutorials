@@ -28,14 +28,15 @@ Tutorials can be started by clicking a file in the Workspace section. To switch 
 
 ### Quick install
 
-To execute the tutorials, we require the memilio-simulation package as well as further dependencies as listed in `requirements.txt`. You can install them in a new virtual environment as follows where we clone the MEmilio repository into this directory to install the memilio-simulation package:
+To execute the tutorials, we require the memilio-simulation package as well as further dependencies as listed in `requirements.txt`. You can install them in a new virtual environment as seen below. Additionally, we clone the MEmilio repository into this directory to install the memilio-simulation package:
+
 ```sh
 python -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 
-git clone git@github.com:SciCompMod/memilio.git
+git clone https://github.com/SciCompMod/memilio.git
 cd memilio/pycode/memilio-simulation
-pip install . 
+python -m pip install . 
 
 ```
