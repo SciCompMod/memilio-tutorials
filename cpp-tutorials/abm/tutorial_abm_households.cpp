@@ -77,14 +77,10 @@ int main(int argc, char* argv[])
     const auto age_group_60_to_79 = mio::AgeGroup(4); // seniors
     const auto age_group_80_plus  = mio::AgeGroup(5); // elderly
 
-    // *** Create the model and set infection parameters. ***
-    // The Model holds all persons, locations, and parameters. We hand over the
-    // number of age groups so that all parameter arrays are sized correctly.
-    // `set_local_parameters` and `set_world_parameters` fill in realistic
-    // epidemiological values (see parameter_setter.h).
+    // *** Create the model. ***
+    // The Model holds all persons, locations, and parameters. We need to add the locations
+    // before we set the parameters as some parameters depend on the locations.
     auto model = mio::abm::Model(num_age_groups);
-    set_local_parameters(model);
-    set_world_parameters(model.parameters);
 
     // Define which age groups are eligible to go to school and to work.
     // The AgeGroupGotoSchool / AgeGroupGotoWork arrays default to false for
@@ -186,6 +182,12 @@ int main(int argc, char* argv[])
 
     // One workplace for all working adults.
     auto work = model.add_location(mio::abm::LocationType::Work);
+
+    // *** Set paramters for all locations. ***
+    // `set_local_parameters` and `set_world_parameters` fill in realistic
+    // epidemiological values (see parameter_setter.h).
+    set_local_parameters(model);
+    set_world_parameters(model.parameters);
 
     // *** Assign initial infection states. ***
     // Each person draws a random infection state from the distribution below.

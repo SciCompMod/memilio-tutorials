@@ -117,8 +117,6 @@ int main(int argc, char* argv[])
 
     // *** Create the model and set infection parameters. ***
     auto model = mio::abm::Model(num_age_groups);
-    set_local_parameters(model);
-    set_world_parameters(model.parameters);
 
     // Define which age groups are eligible to go to school and to work.
     // The AgeGroupGotoSchool / AgeGroupGotoWork arrays default to false for
@@ -217,6 +215,10 @@ int main(int argc, char* argv[])
 
     // One workplace for all working adults.
     auto work = model.add_location(mio::abm::LocationType::Work);
+
+    // *** Set paramters for all locations (same as Tutorial 1). ***
+    set_local_parameters(model);
+    set_world_parameters(model.parameters);
 
     // *** Assign initial infection states. ***
     //
