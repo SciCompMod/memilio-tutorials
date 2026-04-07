@@ -236,7 +236,7 @@ int main(int argc, char* argv[])
         model.parameters.get<mio::abm::SeverityProtectionFactor>()[{mio::abm::ProtectionType::GenericVaccine, age,
                                                                     mio::abm::VirusVariant::Wildtype}] =
             mio::TimeSeriesFunctor<ScalarType>{mio::TimeSeriesFunctorType::LinearInterpolation,
-                                               {{0, 0.0}, {1, 0.85}, {180, 0.70}}};
+                                               {{0, 0.0}, {14, 0.85}, {180, 0.70}}};
     }
 
     std::cout << "Vaccination protection factors configured.\n";
