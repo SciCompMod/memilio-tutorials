@@ -202,10 +202,8 @@ int main(int argc, char* argv[])
     const auto age_group_60_to_79 = mio::AgeGroup(4); // seniors
     const auto age_group_80_plus  = mio::AgeGroup(5); // elderly
 
-    // *** Create the model and set infection parameters (same as Tutorial 1). ***
+    // *** Create the model (same as Tutorial 1). ***
     auto model = mio::abm::Model(num_age_groups);
-    set_local_parameters(model);
-    set_world_parameters(model.parameters);
 
     // Define which age groups are eligible to go to school and to work.
     // The AgeGroupGotoSchool / AgeGroupGotoWork arrays default to false for
@@ -321,6 +319,10 @@ int main(int argc, char* argv[])
     // One workplace for all working adults.
     auto work = model.add_location(mio::abm::LocationType::Work);
 
+    // *** Set paramters for all locations (same as Tutorial 1). ***
+    set_local_parameters(model);
+    set_world_parameters(model.parameters);
+
     // *** Assign initial infection states. ***
     //
     //  Index | InfectionState          | Probability
@@ -420,8 +422,8 @@ int main(int argc, char* argv[])
         // Read real-world vaccination counts from a JSON file and apply
         // them day-by-day to the model's persons.
         const std::string vacc_json_path = "./vacc_county_ageinf_ma7.json";
-        const int county_id       = 1002;
-        const mio::Date sim_start = mio::Date(2020, 10, 1);
+        const int county_id              = 1002;
+        const mio::Date sim_start        = mio::Date(2020, 10, 1);
 
         auto vacc_map = prepare_vaccination_data(vacc_json_path, num_age_groups, county_id);
 
