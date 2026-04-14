@@ -61,7 +61,7 @@ def _():
     from memilio.simulation import AgeGroup, Damping, LogLevel, set_log_level
     # deactivate the log level to avoid warning messages from adaptive step sizing
     set_log_level(LogLevel.Warning)
-    return AgeGroup, LogLevel, osecir, set_log_level
+    return AgeGroup, osecir
 
 
 @app.cell
@@ -152,17 +152,7 @@ def _(mo):
 
 
 @app.cell
-def _(
-    LogLevel,
-    contact_frequency,
-    np,
-    osecir,
-    set_log_level,
-    set_parameters,
-    set_population,
-    t0,
-    tmax,
-):
+def _(contact_frequency, np, osecir, set_parameters, set_population, t0, tmax):
     def run_simulation(parameters, tmax = tmax):
         # Create model and set parameters
         influenza_model = osecir.Model(1)
@@ -269,16 +259,22 @@ def _(mo):
 
 
 @app.cell
-def _(np, osecir):
-    def distance_function(simulation, real_data):
+def _(np, osecir, pyabc):
+    def distance_ICU(simulation, real_data):
         real_ICU = real_data['Critical']
-        real_Deaths = real_data['Deaths']
         sim = simulation['data']
         sim_ICU = sim[1+ int(osecir.InfectionState.InfectedCritical), :]
-        sim_Death = sim[1 + int(osecir.InfectionState.Dead), :]
-        return (np.sum(np.abs(real_ICU - sim_ICU)) + np.sum(np.abs(real_Deaths - sim_Death))) / 1000
+        return np.sum(np.abs(real_ICU - sim_ICU))
 
-    return (distance_function,)
+    def distance_Deaths(simulation, real_data):
+        deaths_per_critical = 1
+        real_Deaths = real_data['Deaths']
+        sim = simulation['data']
+        sim_Death = sim[1 + int(osecir.InfectionState.Dead), :]
+        return 1/deaths_per_critical * np.sum(np.abs(real_Deaths - sim_Death))
+
+    distance = pyabc.AdaptiveAggregatedDistance([distance_ICU, distance_Deaths], adaptive=False, scale_function=pyabc.distance.mean)
+    return (distance,)
 
 
 @app.cell(hide_code=True)
@@ -316,8 +312,8 @@ def _(example_results):
 
 
 @app.cell
-def _(distance_function, example_results, observation_data):
-    distance_function(example_results, observation_data)
+def _(distance, example_results, observation_data):
+    distance(example_results, observation_data)
     return
 
 
@@ -352,16 +348,8 @@ def _(mo):
 
 
 @app.cell
-def _(
-    distance_function,
-    observation_data,
-    os,
-    prior,
-    pyabc,
-    run_simulation,
-    tempfile,
-):
-    abc = pyabc.ABCSMC(run_simulation, prior, distance_function, population_size=400)
+def _(distance, observation_data, os, prior, pyabc, run_simulation, tempfile):
+    abc = pyabc.ABCSMC(run_simulation, prior, distance, population_size=400, sampler=pyabc.sampler.SingleCoreSampler())
     db_path = "sqlite:///" + os.path.join(tempfile.gettempdir(), "tmp.db")
     abc.new(db_path, observation_data)
     return (abc,)
@@ -369,7 +357,7 @@ def _(
 
 @app.cell
 def _(abc):
-    history = abc.run(minimum_epsilon=0.1)
+    history = abc.run(minimum_epsilon=1e-03)
     return (history,)
 
 

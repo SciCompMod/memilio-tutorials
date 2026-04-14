@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.20.4"
+__generated_with = "0.19.11"
 app = marimo.App(width="medium")
 
 
@@ -131,9 +131,12 @@ def _(AgeGroup, num_age_groups):
     def set_parameters(model, parameters):
         for index in range(num_age_groups):
             group = AgeGroup(index)
-            model.parameters.TimeInfectedNoSymptoms[group] = parameters[f"TimeInfectedNoSymptoms{index}"]
-            model.parameters.TransmissionProbabilityOnContact[group] = parameters[f"TransmissionProbabilityOnContact{index}"]
-            model.parameters.RecoveredPerInfectedNoSymptoms[group] = parameters[f"RecoveredPerInfectedNoSymptoms{index}"]
+            model.parameters.TimeInfectedNoSymptoms[
+                group] = parameters[f"TimeInfectedNoSymptoms{index}"]
+            model.parameters.TransmissionProbabilityOnContact[
+                group] = parameters[f"TransmissionProbabilityOnContact{index}"]
+            model.parameters.RecoveredPerInfectedNoSymptoms[
+                group] = parameters[f"RecoveredPerInfectedNoSymptoms{index}"]
 
     return (set_parameters,)
 
@@ -185,14 +188,22 @@ def _(mo):
 @app.cell
 def _(AgeGroup, osecir):
     def set_population(model, parameters):
-        model.populations[AgeGroup(0), osecir.InfectionState.Susceptible] = 3700000
-        model.populations[AgeGroup(1), osecir.InfectionState.Susceptible] = 7920000
-        model.populations[AgeGroup(2), osecir.InfectionState.Susceptible] = 18760000
-        model.populations[AgeGroup(3), osecir.InfectionState.Susceptible] = 28080000
-        model.populations[AgeGroup(4), osecir.InfectionState.Susceptible] = 17720000
-        model.populations[AgeGroup(5), osecir.InfectionState.Susceptible] = 7390000
-        model.populations[AgeGroup(2), osecir.InfectionState.Susceptible].value -= parameters["InitiallyExposed"]
-        model.populations[AgeGroup(2), osecir.InfectionState.Exposed] = parameters["InitiallyExposed"]
+        model.populations[AgeGroup(
+            0), osecir.InfectionState.Susceptible] = 3700000
+        model.populations[AgeGroup(
+            1), osecir.InfectionState.Susceptible] = 7920000
+        model.populations[AgeGroup(
+            2), osecir.InfectionState.Susceptible] = 18760000
+        model.populations[AgeGroup(
+            3), osecir.InfectionState.Susceptible] = 28080000
+        model.populations[AgeGroup(
+            4), osecir.InfectionState.Susceptible] = 17720000
+        model.populations[AgeGroup(
+            5), osecir.InfectionState.Susceptible] = 7390000
+        model.populations[AgeGroup(
+            2), osecir.InfectionState.Susceptible].value -= parameters["InitiallyExposed"]
+        model.populations[AgeGroup(
+            2), osecir.InfectionState.Exposed] = parameters["InitiallyExposed"]
 
     return (set_population,)
 
@@ -208,17 +219,17 @@ def _(mo):
 @app.cell
 def _(ContactMatrix, ContactMatrixGroup, os, read_mobility_plain):
     def set_contact_matrices(model):
-            contact_matrices = ContactMatrixGroup(1, 6)
-            baseline_file = os.path.join(
-                "data/contact_matrix_baseline.txt")
-            minimum_file = os.path.join(
-                "data/contact_matrix_minimum.txt")
-            # Build a ContactMatrix from baseline and minimum files
-            contact_matrices[0] = ContactMatrix(
-                read_mobility_plain(baseline_file),
-                read_mobility_plain(minimum_file),
-            )
-            model.parameters.ContactPatterns.cont_freq_mat = contact_matrices
+        contact_matrices = ContactMatrixGroup(1, 6)
+        baseline_file = os.path.join(
+            "data/contact_matrix_baseline.txt")
+        minimum_file = os.path.join(
+            "data/contact_matrix_minimum.txt")
+        # Build a ContactMatrix from baseline and minimum files
+        contact_matrices[0] = ContactMatrix(
+            read_mobility_plain(baseline_file),
+            read_mobility_plain(minimum_file),
+        )
+        model.parameters.ContactPatterns.cont_freq_mat = contact_matrices
 
     return (set_contact_matrices,)
 
@@ -243,7 +254,7 @@ def _(
     t0,
     tmax,
 ):
-    def run_simulation(parameters, tmax = tmax):
+    def run_simulation(parameters, tmax=tmax):
         # Create model and set parameters
         local_model = osecir.Model(num_age_groups)
         set_population(local_model, parameters)
@@ -297,26 +308,26 @@ def _(mo):
 @app.cell
 def _(pyabc):
     prior = pyabc.Distribution(
-            TimeInfectedNoSymptoms0 = pyabc.RV("uniform", 0.1, 1.9),
-            TransmissionProbabilityOnContact0 = pyabc.RV("uniform", 0.01, 0.1),
-            RecoveredPerInfectedNoSymptoms0 = pyabc.RV("uniform", 0.1, 0.3),
-            TimeInfectedNoSymptoms1 = pyabc.RV("uniform", 0.1, 1.9),
-            TransmissionProbabilityOnContact1 = pyabc.RV("uniform", 0.01, 0.1),
-            RecoveredPerInfectedNoSymptoms1 = pyabc.RV("uniform", 0.1, 0.3),
-            TimeInfectedNoSymptoms2 = pyabc.RV("uniform", 0.1, 1.9),
-            TransmissionProbabilityOnContact2 = pyabc.RV("uniform", 0.01, 0.1),
-            RecoveredPerInfectedNoSymptoms2 = pyabc.RV("uniform", 0.1, 0.3),
-            TimeInfectedNoSymptoms3 = pyabc.RV("uniform", 0.1, 1.9),
-            TransmissionProbabilityOnContact3 = pyabc.RV("uniform", 0.01, 0.1),
-            RecoveredPerInfectedNoSymptoms3 = pyabc.RV("uniform", 0.1, 0.3),
-            TimeInfectedNoSymptoms4 = pyabc.RV("uniform", 0.1, 1.9),
-            TransmissionProbabilityOnContact4 = pyabc.RV("uniform", 0.01, 0.1),
-            RecoveredPerInfectedNoSymptoms4 = pyabc.RV("uniform", 0.1, 0.3),
-            TimeInfectedNoSymptoms5 = pyabc.RV("uniform", 0.1, 1.9),
-            TransmissionProbabilityOnContact5 = pyabc.RV("uniform", 0.01, 0.1),
-            RecoveredPerInfectedNoSymptoms5 = pyabc.RV("uniform", 0.1, 0.3),
-            InitiallyExposed = pyabc.RV("uniform", 1, 200)
-        )
+        TimeInfectedNoSymptoms0=pyabc.RV("uniform", 0.1, 1.9),
+        TransmissionProbabilityOnContact0=pyabc.RV("uniform", 0.01, 0.1),
+        RecoveredPerInfectedNoSymptoms0=pyabc.RV("uniform", 0.1, 0.3),
+        TimeInfectedNoSymptoms1=pyabc.RV("uniform", 0.1, 1.9),
+        TransmissionProbabilityOnContact1=pyabc.RV("uniform", 0.01, 0.1),
+        RecoveredPerInfectedNoSymptoms1=pyabc.RV("uniform", 0.1, 0.3),
+        TimeInfectedNoSymptoms2=pyabc.RV("uniform", 0.1, 1.9),
+        TransmissionProbabilityOnContact2=pyabc.RV("uniform", 0.01, 0.1),
+        RecoveredPerInfectedNoSymptoms2=pyabc.RV("uniform", 0.1, 0.3),
+        TimeInfectedNoSymptoms3=pyabc.RV("uniform", 0.1, 1.9),
+        TransmissionProbabilityOnContact3=pyabc.RV("uniform", 0.01, 0.1),
+        RecoveredPerInfectedNoSymptoms3=pyabc.RV("uniform", 0.1, 0.3),
+        TimeInfectedNoSymptoms4=pyabc.RV("uniform", 0.1, 1.9),
+        TransmissionProbabilityOnContact4=pyabc.RV("uniform", 0.01, 0.1),
+        RecoveredPerInfectedNoSymptoms4=pyabc.RV("uniform", 0.1, 0.3),
+        TimeInfectedNoSymptoms5=pyabc.RV("uniform", 0.1, 1.9),
+        TransmissionProbabilityOnContact5=pyabc.RV("uniform", 0.01, 0.1),
+        RecoveredPerInfectedNoSymptoms5=pyabc.RV("uniform", 0.1, 0.3),
+        InitiallyExposed=pyabc.RV("uniform", 1, 200)
+    )
     return (prior,)
 
 
@@ -347,19 +358,27 @@ def _(mo):
 
 
 @app.cell
-def _(np, num_age_groups, tmax):
-    def distance_function(simulation, real_data):
+def _(DeathssPerCritical, np, num_age_groups, pyabc, tmax):
+    def distance_ICU(simulation, real_data):
         return_value = 0
         for i in range(num_age_groups):
             real_ICU = real_data[f"AgeGroup {i} InfectedCritical"]
             sim_ICU = simulation['data'][10*(i+1)-2]
             return_value += np.sum(np.abs(real_ICU - sim_ICU))
+        return return_value / (2 * num_age_groups * tmax)
+
+    def distance_Deaths(simulation, real_data):
+        return_value = 0
+        for i in range(num_age_groups):
             real_Deaths = real_data[f"AgeGroup {i} Dead"]
             sim_Death = simulation["data"][10*(i+1)]
-            return_value += np.sum(np.abs(real_Deaths - sim_Death))
-        return return_value / (2* num_age_groups * tmax)
+            return_value += np.sum(DeathssPerCritical[i]
+                                   * np.abs(real_Deaths - sim_Death))
+        return return_value / (2 * num_age_groups * tmax)
 
-    return (distance_function,)
+    distance = pyabc.AdaptiveAggregatedDistance(
+        [distance_ICU, distance_Deaths], adaptive=False, scale_function=pyabc.distance.mean)
+    return (distance,)
 
 
 @app.cell(hide_code=True)
@@ -397,8 +416,8 @@ def _(example_results):
 
 
 @app.cell
-def _(distance_function, example_results, observation_data):
-    distance_function(example_results, observation_data)
+def _(distance, example_results, observation_data):
+    distance(example_results, observation_data)
     return
 
 
@@ -431,16 +450,9 @@ def _(mo):
 
 
 @app.cell
-def _(
-    distance_function,
-    observation_data,
-    os,
-    prior,
-    pyabc,
-    run_simulation,
-    tempfile,
-):
-    abc = pyabc.ABCSMC(run_simulation, prior, distance_function, population_size=600)
+def _(distance, observation_data, os, prior, pyabc, run_simulation, tempfile):
+    abc = pyabc.ABCSMC(run_simulation, prior,
+                       distance, population_size=600)
     db_path = "sqlite:///" + os.path.join(tempfile.gettempdir(), "tmp.db")
     abc.new(db_path, observation_data)
     return (abc,)
@@ -448,7 +460,7 @@ def _(
 
 @app.cell
 def _(abc):
-    history = abc.run(max_nr_populations = 6)
+    history = abc.run(minimum_epsilon=1)
     return (history,)
 
 
@@ -492,15 +504,18 @@ def _(mo):
 def _(np, num_age_groups):
     def plot_critical_data(sum_stat, weight, ax, **kwargs):
         for i in range(num_age_groups):
-            ax.plot(range(0, 31), sum_stat['data'][10*(i+1)-2, :], color = 'grey', alpha = 0.1)
+            ax.plot(range(0, 31), sum_stat['data']
+                    [10*(i+1)-2, :], color='grey', alpha=0.1)
 
     def plot_critical_mean(sum_stats, weights, ax, **kwargs):
         for i in range(num_age_groups):
             weights = np.array(weights)
             weights /= weights.sum()
-            data = np.array([sum_stat['data'][10*(i+1)-2, :] for sum_stat in sum_stats])
+            data = np.array([sum_stat['data'][10*(i+1)-2, :]
+                            for sum_stat in sum_stats])
             mean = (data * weights.reshape((-1, 1))).sum(axis=0)
-            ax.plot(range(0, 31), mean, color=f"C{i}", label = f"Simulation mean Agegroup {i}")
+            ax.plot(range(0, 31), mean,
+                    color=f"C{i}", label=f"Simulation mean Agegroup {i}")
 
     return plot_critical_data, plot_critical_mean
 
@@ -508,6 +523,7 @@ def _(np, num_age_groups):
 @app.cell
 def _(
     history,
+    mo,
     num_age_groups,
     observation_data,
     plot_critical_data,
@@ -516,15 +532,18 @@ def _(
     pyabc,
 ):
     fig, ax = plt.subplots()
-    ax = pyabc.visualization.plot_data_callback(history, plot_critical_data, plot_critical_mean, ax=ax)
+    ax = pyabc.visualization.plot_data_callback(
+        history, plot_critical_data, plot_critical_mean, ax=ax)
 
     for _i in range(num_age_groups):
-        plt.scatter(range(0, 31), observation_data[f"AgeGroup {_i} InfectedCritical"], color = f"C{_i}", label = f"data Age group {_i}", zorder = 2)
+        plt.scatter(range(
+            0, 31), observation_data[f"AgeGroup {_i} InfectedCritical"], color=f"C{_i}", label=f"data Age group {_i}", zorder=2)
     plt.xlabel("Time")
     plt.ylabel("# Cases")
     plt.title("Number of ICU patients")
     plt.legend()
     plt.show()
+    mo.vstack([ax])
     return
 
 
@@ -532,15 +551,18 @@ def _(
 def _(np, num_age_groups):
     def plot_dead_data(sum_stat, weight, ax, **kwargs):
         for i in range(num_age_groups):
-            ax.plot(range(0, 31), sum_stat['data'][10*(i+1), :], color = 'grey', alpha = 0.1)
+            ax.plot(range(0, 31), sum_stat['data']
+                    [10*(i+1), :], color='grey', alpha=0.1)
 
     def plot_dead_mean(sum_stats, weights, ax, **kwargs):
         for i in range(num_age_groups):
             weights = np.array(weights)
             weights /= weights.sum()
-            data = np.array([sum_stat['data'][10*(i+1), :] for sum_stat in sum_stats])
+            data = np.array([sum_stat['data'][10*(i+1), :]
+                            for sum_stat in sum_stats])
             mean = (data * weights.reshape((-1, 1))).sum(axis=0)
-            ax.plot(range(0, 31), mean, color=f"C{i}", label = f"Simulation mean Agegroup {i}")
+            ax.plot(range(0, 31), mean,
+                    color=f"C{i}", label=f"Simulation mean Agegroup {i}")
 
     return plot_dead_data, plot_dead_mean
 
@@ -556,10 +578,12 @@ def _(
     pyabc,
 ):
     fig_dead, ax_dead = plt.subplots()
-    ax_dead = pyabc.visualization.plot_data_callback(history, plot_dead_data, plot_dead_mean, ax=ax_dead)
+    ax_dead = pyabc.visualization.plot_data_callback(
+        history, plot_dead_data, plot_dead_mean, ax=ax_dead)
 
     for i in range(num_age_groups):
-        plt.scatter(range(0, 31), observation_data[f"AgeGroup {i} Dead"], color = f"C{i}", label = f"data Age group {i}", zorder = 2)
+        plt.scatter(range(
+            0, 31), observation_data[f"AgeGroup {i} Dead"], color=f"C{i}", label=f"data Age group {i}", zorder=2)
     plt.xlabel("Time")
     plt.ylabel("# Cases")
     plt.title("Cumulative number of dead patients")
@@ -591,12 +615,14 @@ def _(history, np, plt, prior, pyabc):
             continue
         pyabc.visualization.plot_kde_1d(
             _df,
-             _w,
+            _w,
             x=param,
             # xname = param_names_to_types[param],
             # title=param_names_to_formulas[param],
-            xmax=prior[param].distribution.support()[1] if np.isfinite(prior[param].distribution.support()[1]) else None,
-            xmin=prior[param].distribution.support()[0] if np.isfinite(prior[param].distribution.support()[0]) else None,
+            xmax=prior[param].distribution.support()[1] if np.isfinite(
+                prior[param].distribution.support()[1]) else None,
+            xmin=prior[param].distribution.support()[0] if np.isfinite(
+                prior[param].distribution.support()[0]) else None,
             ax=_ax[_i],
             label=f"PDF t={history.max_t+1}",
         )
