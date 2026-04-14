@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.19.11"
+__generated_with = "0.20.0"
 app = marimo.App(width="medium")
 
 
@@ -267,13 +267,12 @@ def _(np, osecir, pyabc):
         return np.sum(np.abs(real_ICU - sim_ICU))
 
     def distance_Deaths(simulation, real_data):
-        deaths_per_critical = 1
         real_Deaths = real_data['Deaths']
         sim = simulation['data']
         sim_Death = sim[1 + int(osecir.InfectionState.Dead), :]
-        return 1/deaths_per_critical * np.sum(np.abs(real_Deaths - sim_Death))
+        return np.sum(np.abs(real_Deaths - sim_Death))
 
-    distance = pyabc.AdaptiveAggregatedDistance([distance_ICU, distance_Deaths], adaptive=False, scale_function=pyabc.distance.mean)
+    distance = pyabc.AdaptiveAggregatedDistance([distance_ICU, distance_Deaths], adaptive=False, scale_function=pyabc.distance.median)
     return (distance,)
 
 
@@ -313,7 +312,7 @@ def _(example_results):
 
 @app.cell
 def _(distance, example_results, observation_data):
-    distance(example_results, observation_data)
+    distance(example_results, observation_data, t=-1)
     return
 
 
@@ -349,7 +348,7 @@ def _(mo):
 
 @app.cell
 def _(distance, observation_data, os, prior, pyabc, run_simulation, tempfile):
-    abc = pyabc.ABCSMC(run_simulation, prior, distance, population_size=400, sampler=pyabc.sampler.SingleCoreSampler())
+    abc = pyabc.ABCSMC(run_simulation, prior, distance, population_size=400)
     db_path = "sqlite:///" + os.path.join(tempfile.gettempdir(), "tmp.db")
     abc.new(db_path, observation_data)
     return (abc,)
@@ -357,7 +356,7 @@ def _(distance, observation_data, os, prior, pyabc, run_simulation, tempfile):
 
 @app.cell
 def _(abc):
-    history = abc.run(minimum_epsilon=1e-03)
+    history = abc.run(minimum_epsilon=5e-01)
     return (history,)
 
 

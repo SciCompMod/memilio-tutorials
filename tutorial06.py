@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.19.11"
+__generated_with = "0.20.0"
 app = marimo.App(width="medium")
 
 
@@ -417,7 +417,7 @@ def _(example_results):
 
 @app.cell
 def _(distance, example_results, observation_data):
-    distance(example_results, observation_data)
+    distance(example_results, observation_data, t=-1)
     return
 
 
@@ -460,14 +460,14 @@ def _(distance, observation_data, os, prior, pyabc, run_simulation, tempfile):
 
 @app.cell
 def _(abc):
-    history = abc.run(minimum_epsilon=1)
+    history = abc.run(minimum_epsilon=8e-1)
     return (history,)
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    Great, that worked out well. Let's take a look at the evaluation figures by `pyabc`. Here we can see the posterior distributions for the different parameters.Rendering the figure takes a few seconds.
+    Great, that worked out well. Let's take a look at the evaluation figures by `pyabc`. Here we can see the posterior distributions for the different parameters. Rendering the figure takes a few seconds.
     """)
     return
 
