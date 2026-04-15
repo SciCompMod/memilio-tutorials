@@ -350,7 +350,7 @@ def _(mo):
     mo.md(r"""
     ## Defining the objective function
 
-    The last step before running the fitting is the defintion of an objective (or distance) function. Here, we are given data for the ICU cases and deaths per day for multiple age groups. Thus an obvious choice for the distance function is to calculate the difference between the simulated and the observed numbers per day and adding them up.
+    The last step before running the fitting is the defintion of an objective (or distance) function. Here, we are given data for the ICU cases and deaths per day for multiple age groups. Thus an obvious choice for the distance function is to calculate the difference between the simulated and the observed numbers per day and then add them up. As they live on different scales, we define the distance on ICU cases and deaths seperately and use `pyabc.AdaptiveAggregatedDistance` to scale them and aggregate.
 
     We need a function that takes a `data` dictionary provided by our `run_simulation` function and an `observation` dictionary, given by our input data. As with plotting in the previous tutorials, we have to access the correct columns of our simulation results by indexing as there is no name provided.
     """)
