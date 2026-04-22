@@ -64,7 +64,7 @@ const auto age_group_80_plus  = mio::AgeGroup(5);
 //   - Is active for the full 30-day simulation window.
 //   - Uses a PCR test (sensitivity/specificity come from TestData defaults).
 //   - Tests are valid for `validity_days`; a negative result exempts retesting for validity_days days (Default: 3).
-//   - Targets persons in any infected state (Exposed through Critical).
+//   - Targets persons in any infected state (Exposed to Critical).
 //   - Applies to all age groups except school children (5-14).
 //   - Tests with `testing_probability` probability upon entry (Default: 100%).
 //   - Applies to all public locations (SocialEvent, School, Work, BasicsShop)
@@ -90,7 +90,7 @@ void add_npi_testing_strategies_to_world(mio::abm::Model& model, double testing_
 
     auto testing_criteria = mio::abm::TestingCriteria(ages_to_test, states_to_test);
     auto testing_scheme   = mio::abm::TestingScheme(testing_criteria, validity, start_date_test, end_date_test,
-                                                  pcr_test_parameters, testing_probability);
+                                                    pcr_test_parameters, testing_probability);
 
     // Attach the scheme to all public location types.
     model.get_testing_strategy().add_scheme(mio::abm::LocationType::SocialEvent, testing_scheme);
@@ -117,8 +117,6 @@ int main(int argc, char* argv[])
 
     // *** Create the model and set infection parameters. ***
     auto model = mio::abm::Model(num_age_groups);
-    set_local_parameters(model);
-    set_world_parameters(model.parameters);
 
     // Define which age groups are eligible to go to school and to work.
     // The AgeGroupGotoSchool / AgeGroupGotoWork arrays default to false for
@@ -217,6 +215,10 @@ int main(int argc, char* argv[])
 
     // One workplace for all working adults.
     auto work = model.add_location(mio::abm::LocationType::Work);
+
+    // *** Set paramters for all locations (same as Tutorial 1). ***
+    set_local_parameters(model);
+    set_world_parameters(model.parameters);
 
     // *** Assign initial infection states. ***
     //

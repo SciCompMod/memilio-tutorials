@@ -186,7 +186,7 @@ int main(int argc, char* argv[])
     //   use_data_vacc     : 1 = apply JSON data-driven vaccination, 0 = skip (default: 0)
     //                         Note that no vaccination takes place if json file should be used but cannot be found!
     double arg_vacc_rate       = (argc > 1) ? std::atof(argv[1]) : 0.0;
-    int arg_n_households       = (argc > 2) ? std::atoi(argv[2]) : 1000;
+    int arg_n_households       = (argc > 2) ? std::atoi(argv[2]) : 125;
     double arg_protection_peak = (argc > 3) ? std::atof(argv[3]) : 0.67;
     int arg_use_data_vacc      = (argc > 4) ? std::atoi(argv[4]) : 0;
 
@@ -202,10 +202,8 @@ int main(int argc, char* argv[])
     const auto age_group_60_to_79 = mio::AgeGroup(4); // seniors
     const auto age_group_80_plus  = mio::AgeGroup(5); // elderly
 
-    // *** Create the model and set infection parameters (same as Tutorial 1). ***
+    // *** Create the model (same as Tutorial 1). ***
     auto model = mio::abm::Model(num_age_groups);
-    set_local_parameters(model);
-    set_world_parameters(model.parameters);
 
     // Define which age groups are eligible to go to school and to work.
     // The AgeGroupGotoSchool / AgeGroupGotoWork arrays default to false for
@@ -238,7 +236,7 @@ int main(int argc, char* argv[])
         model.parameters.get<mio::abm::SeverityProtectionFactor>()[{mio::abm::ProtectionType::GenericVaccine, age,
                                                                     mio::abm::VirusVariant::Wildtype}] =
             mio::TimeSeriesFunctor<ScalarType>{mio::TimeSeriesFunctorType::LinearInterpolation,
-                                               {{0, 0.0}, {1, 0.85}, {180, 0.70}}};
+                                               {{0, 0.0}, {14, 0.85}, {180, 0.70}}};
     }
 
     std::cout << "Vaccination protection factors configured.\n";
@@ -320,6 +318,10 @@ int main(int argc, char* argv[])
 
     // One workplace for all working adults.
     auto work = model.add_location(mio::abm::LocationType::Work);
+
+    // *** Set paramters for all locations (same as Tutorial 1). ***
+    set_local_parameters(model);
+    set_world_parameters(model.parameters);
 
     // *** Assign initial infection states. ***
     //
@@ -419,10 +421,9 @@ int main(int argc, char* argv[])
         // ── Data-driven mode ─────────────────────────────────────────
         // Read real-world vaccination counts from a JSON file and apply
         // them day-by-day to the model's persons.
-        const std::string vacc_json_path =
-            "/Users/saschakorf/Documents/Promotion/memilio-tutorials/cpp-tutorials/abm/vacc_county_ageinf_ma7.json";
-        const int county_id       = 1002;
-        const mio::Date sim_start = mio::Date(2020, 10, 1);
+        const std::string vacc_json_path = "./vacc_county_ageinf_ma7.json";
+        const int county_id              = 1002;
+        const mio::Date sim_start        = mio::Date(2020, 10, 1);
 
         auto vacc_map = prepare_vaccination_data(vacc_json_path, num_age_groups, county_id);
 

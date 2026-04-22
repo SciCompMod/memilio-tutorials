@@ -116,7 +116,7 @@ def _(AgeGroup, model, np, num_age_groups):
     model.parameters.CriticalPerSevere[AgeGroup(2)] = 0.25 * 2
 
     # Set contact frequency
-    model.parameters.ContactPatterns.cont_freq_mat[0].baseline = np.ones((num_age_groups, num_age_groups)) * 10
+    model.parameters.ContactPatterns.cont_freq_mat[0].baseline = np.ones((num_age_groups, num_age_groups)) * contact_frequency
     return
 
 
@@ -171,7 +171,7 @@ def _(dt, model, osecir, t0, tmax):
     result = osecir.simulate(t0, tmax, dt, model)
     # Interpolate result to full days
     interpolated_result = osecir.interpolate_simulation_result(result)
-    interpolated_result.print_table()
+    print(interpolated_result.print_table(return_string=True))
     return (result,)
 
 

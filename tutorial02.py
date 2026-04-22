@@ -47,7 +47,7 @@ def _(mo):
 def _(np):
     import memilio.simulation.osecir as osecir
     from memilio.simulation import AgeGroup, LogLevel, set_log_level
-    set_log_level(LogLevel.Off)
+    set_log_level(LogLevel.Error)
 
     # Initialize total population, simulation start time, timeframe, and step size
     total_population = 100000
@@ -76,11 +76,14 @@ def _(np):
     model.parameters.DeathsPerCritical[group] = 0.3
 
     # Set contact frequency
-    model.parameters.ContactPatterns.cont_freq_mat[0].baseline = np.ones((1, 1)) * 10
+    model.parameters.ContactPatterns.cont_freq_mat[0].baseline = np.ones(
+        (1, 1)) * 10
 
     # Initialize compartments
-    model.populations[group, osecir.InfectionState.Exposed] = 0.005 * total_population
-    model.populations[group, osecir.InfectionState.InfectedNoSymptoms] = 0.005 * total_population
+    model.populations[group,
+                      osecir.InfectionState.Exposed] = 0.005 * total_population
+    model.populations[group,
+                      osecir.InfectionState.InfectedNoSymptoms] = 0.005 * total_population
     model.populations.set_difference_from_total(
         (group, osecir.InfectionState.Susceptible), total_population)
     return dt, model, osecir, t0, tmax
@@ -123,7 +126,8 @@ def _(dt, model, osecir, t0, tmax):
 
 @app.cell
 def _(results):
-    compartments = results[0]  # The first element of results contains the compartment data
+    # The first element of results contains the compartment data
+    compartments = results[0]
     flows = results[1]  # The second element of results contains the flow data
     return compartments, flows
 
@@ -163,7 +167,6 @@ def _(flows, np, osecir):
     plot_time = time_days[1:]
 
     print(flow_array.shape)
-    print("ji")
     return daily_flows, plot_time
 
 
@@ -197,12 +200,13 @@ def _(mo):
 def _(compartments, daily_flows, osecir, plot_time, plt):
     # 1. Prepare compartment data for comparison
     # Interpolate to match the time grid of our flows
-    comp_array = osecir.interpolate_simulation_result(compartments).as_ndarray()
+    comp_array = osecir.interpolate_simulation_result(
+        compartments).as_ndarray()
 
     # Extract the "InfectedSevere" compartment (Currently Hospitalized)
     # Adding 1 because row 0 is the time axis
     state_severe_idx = 1 + int(osecir.InfectionState.InfectedSevere)
-    current_severe = comp_array[state_severe_idx, 1:] 
+    current_severe = comp_array[state_severe_idx, 1:]
 
     # 2. Flow indices
     new_symptomatic_idx = 2
@@ -212,8 +216,10 @@ def _(compartments, daily_flows, osecir, plot_time, plt):
     fig, ax = plt.subplots(1, 2, figsize=(14, 6))
 
     # --- Subplot 1: Disease Progression (The Time Lag) ---
-    ax[0].bar(plot_time, daily_flows[new_symptomatic_idx, :], color='coral', alpha=0.5, label='New Symptomatic Cases')
-    ax[0].bar(plot_time, daily_flows[new_hospitalized_idx, :], color='darkred', alpha=0.8, label='New Hospitalizations')
+    ax[0].bar(plot_time, daily_flows[new_symptomatic_idx, :],
+              color='coral', alpha=0.5, label='New Symptomatic Cases')
+    ax[0].bar(plot_time, daily_flows[new_hospitalized_idx, :],
+              color='darkred', alpha=0.8, label='New Hospitalizations')
     ax[0].set_title('Disease Progression: Infection to Hospitalization')
     ax[0].set_xlabel('Time [days]')
     ax[0].set_ylabel('Daily New Cases [#]')
@@ -221,14 +227,16 @@ def _(compartments, daily_flows, osecir, plot_time, plt):
 
     # --- Subplot 2: Incidence vs. Bed Occupancy ---
     # Axis 1: Daily New Cases (Incidence)
-    ax[1].bar(plot_time, daily_flows[new_hospitalized_idx, :], color='steelblue', alpha=0.5, label='Daily Admissions (Incidence)')
+    ax[1].bar(plot_time, daily_flows[new_hospitalized_idx, :],
+              color='steelblue', alpha=0.5, label='Daily Admissions (Incidence)')
     ax[1].set_xlabel('Time [days]')
     ax[1].set_ylabel('Daily New Hospitalizations [#]', color='steelblue')
     ax[1].tick_params(axis='y', labelcolor='steelblue')
 
     # Axis 2: Current Occupancy
     ax2 = ax[1].twinx()
-    ax2.plot(plot_time, current_severe, color='black', linewidth=3, label='Currently Hospitalized')
+    ax2.plot(plot_time, current_severe, color='black',
+             linewidth=3, label='Currently Hospitalized')
     ax2.set_ylabel('Total Hospital Bed Occupancy [#]', color='black')
     ax2.tick_params(axis='y', labelcolor='black')
 

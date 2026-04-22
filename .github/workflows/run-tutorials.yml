@@ -36,7 +36,7 @@ jobs:
           # Install memilio-simulation from the cloned repo (C++ extension, needs cmake/ninja)
           uv add --dev ./memilio/pycode/memilio-simulation
           # Install tutorial dependencies
-          uv add marimo matplotlib pandas numpy pyabc[pyarrow] bayesflow tensorflow nbformat
+          uv add -r requirements.txt -c requirements.txt
 
       - name: Run tutorials and export to HTML
         run: |

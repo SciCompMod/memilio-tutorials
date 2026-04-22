@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.19.11"
+__generated_with = "0.20.0"
 app = marimo.App(width="medium")
 
 
@@ -61,7 +61,7 @@ def _():
     from memilio.simulation import AgeGroup, Damping, LogLevel, set_log_level
     # deactivate the log level to avoid warning messages from adaptive step sizing
     set_log_level(LogLevel.Warning)
-    return AgeGroup, LogLevel, osecir, set_log_level
+    return AgeGroup, osecir
 
 
 @app.cell
@@ -114,10 +114,14 @@ def _(AgeGroup):
         model.parameters.TimeInfectedSevere[group] = parameters["TimeInfectedSevere"]
         model.parameters.TimeInfectedCritical[group] = parameters["TimeInfectedCritical"]
 
-        model.parameters.RelativeTransmissionNoSymptoms[group] = parameters["RelativeTransmissionNoSymptoms"]
-        model.parameters.TransmissionProbabilityOnContact[group] = parameters["TransmissionProbabilityOnContact"]
-        model.parameters.RecoveredPerInfectedNoSymptoms[group] = parameters["RecoveredPerInfectedNoSymptoms"]
-        model.parameters.RiskOfInfectionFromSymptomatic[group] = parameters["RiskOfInfectionFromSymptomatic"]
+        model.parameters.RelativeTransmissionNoSymptoms[
+            group] = parameters["RelativeTransmissionNoSymptoms"]
+        model.parameters.TransmissionProbabilityOnContact[
+            group] = parameters["TransmissionProbabilityOnContact"]
+        model.parameters.RecoveredPerInfectedNoSymptoms[
+            group] = parameters["RecoveredPerInfectedNoSymptoms"]
+        model.parameters.RiskOfInfectionFromSymptomatic[
+            group] = parameters["RiskOfInfectionFromSymptomatic"]
         model.parameters.SeverePerInfectedSymptoms[group] = parameters["SeverePerInfectedSymptoms"]
         model.parameters.CriticalPerSevere[group] = parameters["CriticalPerSevere"]
         model.parameters.DeathsPerCritical[group] = parameters["DeathsPerCritical"]
@@ -137,8 +141,10 @@ def _(mo):
 def _(AgeGroup, osecir, total_population):
     def set_population(model, parameters):
         group = AgeGroup(0)
-        model.populations[group, osecir.InfectionState.Exposed] = parameters["InitiallyExposed"]
-        model.populations.set_difference_from_total((group, osecir.InfectionState.Susceptible), total_population)
+        model.populations[group,
+                          osecir.InfectionState.Exposed] = parameters["InitiallyExposed"]
+        model.populations.set_difference_from_total(
+            (group, osecir.InfectionState.Susceptible), total_population)
 
     return (set_population,)
 
@@ -152,23 +158,14 @@ def _(mo):
 
 
 @app.cell
-def _(
-    LogLevel,
-    contact_frequency,
-    np,
-    osecir,
-    set_log_level,
-    set_parameters,
-    set_population,
-    t0,
-    tmax,
-):
-    def run_simulation(parameters, tmax = tmax):
+def _(contact_frequency, np, osecir, set_parameters, set_population, t0, tmax):
+    def run_simulation(parameters, tmax=tmax):
         # Create model and set parameters
         influenza_model = osecir.Model(1)
         set_population(influenza_model, parameters)
         set_parameters(influenza_model, parameters)
-        influenza_model.parameters.ContactPatterns.cont_freq_mat[0].baseline = np.ones((1,1)) * contact_frequency
+        influenza_model.parameters.ContactPatterns.cont_freq_mat[0].baseline = np.ones(
+            (1, 1)) * contact_frequency
         # Check that the parameters are meaningful, i.e., no negative dwelling times
         influenza_model.check_constraints()
 
@@ -225,20 +222,20 @@ def _(mo):
 @app.cell
 def _(pyabc):
     prior = pyabc.Distribution(
-            TimeExposed = pyabc.RV("uniform", 0.5, 4),
-            TimeInfectedNoSymptoms = pyabc.RV("uniform", 0.5, 5),
-            TimeInfectedSymptoms = pyabc.RV("uniform", 0.5, 5),
-            TimeInfectedSevere = pyabc.RV("uniform", 1, 8),
-            TimeInfectedCritical = pyabc.RV("uniform", 2, 10),
-            RelativeTransmissionNoSymptoms = pyabc.RV("uniform", 0.01, 0.5),
-            TransmissionProbabilityOnContact = pyabc.RV("uniform", 0.01, 0.5),
-            RecoveredPerInfectedNoSymptoms = pyabc.RV("uniform", 0.01, 0.5),
-            RiskOfInfectionFromSymptomatic = pyabc.RV("uniform", 0.01, 0.9),
-            SeverePerInfectedSymptoms = pyabc.RV("uniform", 0.01, 0.5),
-            CriticalPerSevere = pyabc.RV("uniform", 0.01, 0.5),
-            DeathsPerCritical = pyabc.RV("uniform", 0.01, 0.8),
-            InitiallyExposed = pyabc.RV("uniform", 1, 200)
-        )
+        TimeExposed=pyabc.RV("uniform", 0.5, 4),
+        TimeInfectedNoSymptoms=pyabc.RV("uniform", 0.5, 5),
+        TimeInfectedSymptoms=pyabc.RV("uniform", 0.5, 5),
+        TimeInfectedSevere=pyabc.RV("uniform", 1, 8),
+        TimeInfectedCritical=pyabc.RV("uniform", 2, 10),
+        RelativeTransmissionNoSymptoms=pyabc.RV("uniform", 0.01, 0.5),
+        TransmissionProbabilityOnContact=pyabc.RV("uniform", 0.01, 0.5),
+        RecoveredPerInfectedNoSymptoms=pyabc.RV("uniform", 0.01, 0.5),
+        RiskOfInfectionFromSymptomatic=pyabc.RV("uniform", 0.01, 0.9),
+        SeverePerInfectedSymptoms=pyabc.RV("uniform", 0.01, 0.5),
+        CriticalPerSevere=pyabc.RV("uniform", 0.01, 0.5),
+        DeathsPerCritical=pyabc.RV("uniform", 0.01, 0.8),
+        InitiallyExposed=pyabc.RV("uniform", 1, 200)
+    )
     return (prior,)
 
 
@@ -261,7 +258,7 @@ def _(mo):
     mo.md(r"""
     ## Defining the objective function
 
-    The last step before running the fitting is the defintion of an objective (or distance) function. Here, we are given data for the ICU cases and deaths per day. Thus an obvious choice for the distance function is to calculate the difference between the simulated and the observed numbers per day and adding them up.
+    The last step before running the fitting is the defintion of an objective (or distance) function. Here, we are given data for the ICU cases and deaths per day. Thus an obvious choice for the distance function is to calculate the difference between the simulated and the observed numbers per day and then add them up. As they live on different scales, we define the distance on ICU cases and deaths seperately and use `pyabc.AdaptiveAggregatedDistance` to scale them and aggregate.
 
     We need a function that takes a `data` dictionary provided by our `run_simulation` function and an `observation` dictionary, given by our input data. As in the plotting sections of the previous tutorials, we have to access the correct columns of our simulation results by indexing as there is no name provided.
     """)
@@ -269,16 +266,22 @@ def _(mo):
 
 
 @app.cell
-def _(np, osecir):
-    def distance_function(simulation, real_data):
+def _(np, osecir, pyabc):
+    def distance_ICU(simulation, real_data):
         real_ICU = real_data['Critical']
+        sim = simulation['data']
+        sim_ICU = sim[1 + int(osecir.InfectionState.InfectedCritical), :]
+        return np.sum(np.abs(real_ICU - sim_ICU))
+
+    def distance_Deaths(simulation, real_data):
         real_Deaths = real_data['Deaths']
         sim = simulation['data']
-        sim_ICU = sim[1+ int(osecir.InfectionState.InfectedCritical), :]
         sim_Death = sim[1 + int(osecir.InfectionState.Dead), :]
-        return (np.sum(np.abs(real_ICU - sim_ICU)) + np.sum(np.abs(real_Deaths - sim_Death))) / 1000
+        return np.sum(np.abs(real_Deaths - sim_Death))
 
-    return (distance_function,)
+    distance = pyabc.AdaptiveAggregatedDistance(
+        [distance_ICU, distance_Deaths], adaptive=False, scale_function=pyabc.distance.median)
+    return (distance,)
 
 
 @app.cell(hide_code=True)
@@ -316,8 +319,8 @@ def _(example_results):
 
 
 @app.cell
-def _(distance_function, example_results, observation_data):
-    distance_function(example_results, observation_data)
+def _(distance, example_results, observation_data):
+    distance(example_results, observation_data, t=-1)
     return
 
 
@@ -352,16 +355,8 @@ def _(mo):
 
 
 @app.cell
-def _(
-    distance_function,
-    observation_data,
-    os,
-    prior,
-    pyabc,
-    run_simulation,
-    tempfile,
-):
-    abc = pyabc.ABCSMC(run_simulation, prior, distance_function, population_size=400)
+def _(distance, observation_data, os, prior, pyabc, run_simulation, tempfile):
+    abc = pyabc.ABCSMC(run_simulation, prior, distance, population_size=400)
     db_path = "sqlite:///" + os.path.join(tempfile.gettempdir(), "tmp.db")
     abc.new(db_path, observation_data)
     return (abc,)
@@ -369,7 +364,7 @@ def _(
 
 @app.cell
 def _(abc):
-    history = abc.run(minimum_epsilon=0.1)
+    history = abc.run(minimum_epsilon=5e-01)
     return (history,)
 
 
@@ -412,14 +407,16 @@ def _(mo):
 @app.cell
 def _(np, osecir):
     def plot_critical_data(sum_stat, weight, ax, **kwargs):
-        ax.plot(range(0, 31), sum_stat['data'][1+ int(osecir.InfectionState.InfectedCritical), :], color = 'grey', alpha = 0.1)
+        ax.plot(range(0, 31), sum_stat['data'][1 + int(
+            osecir.InfectionState.InfectedCritical), :], color='grey', alpha=0.1)
 
     def plot_critical_mean(sum_stats, weights, ax, **kwargs):
         weights = np.array(weights)
         weights /= weights.sum()
-        data = np.array([sum_stat['data'][1+ int(osecir.InfectionState.InfectedCritical), :] for sum_stat in sum_stats])
+        data = np.array([sum_stat['data'][1 + int(osecir.InfectionState.InfectedCritical), :]
+                        for sum_stat in sum_stats])
         mean = (data * weights.reshape((-1, 1))).sum(axis=0)
-        ax.plot(range(0, 31), mean, color='C2', label = "Simulation mean")
+        ax.plot(range(0, 31), mean, color='C2', label="Simulation mean")
 
     return plot_critical_data, plot_critical_mean
 
@@ -434,9 +431,11 @@ def _(
     pyabc,
 ):
     fig, ax = plt.subplots()
-    ax = pyabc.visualization.plot_data_callback(history, plot_critical_data, plot_critical_mean, ax=ax)
+    ax = pyabc.visualization.plot_data_callback(
+        history, plot_critical_data, plot_critical_mean, ax=ax)
 
-    plt.scatter(range(0, 31), observation_data["Critical"], color = "C1", label = "Data", zorder = 2)
+    plt.scatter(
+        range(0, 31), observation_data["Critical"], color="C1", label="Data", zorder=2)
     plt.xlabel("Time")
     plt.ylabel("# Cases")
     plt.title("Number of ICU patients")
@@ -448,14 +447,16 @@ def _(
 @app.cell
 def _(np, osecir):
     def plot_dead_data(sum_stat, weight, ax, **kwargs):
-        ax.plot(range(0, 31), sum_stat['data'][1+ int(osecir.InfectionState.Dead), :], color = 'grey', alpha = 0.1)
+        ax.plot(range(
+            0, 31), sum_stat['data'][1 + int(osecir.InfectionState.Dead), :], color='grey', alpha=0.1)
 
     def plot_dead_mean(sum_stats, weights, ax, **kwargs):
         weights = np.array(weights)
         weights /= weights.sum()
-        data = np.array([sum_stat['data'][1+ int(osecir.InfectionState.Dead), :] for sum_stat in sum_stats])
+        data = np.array([sum_stat['data'][1 + int(osecir.InfectionState.Dead), :]
+                        for sum_stat in sum_stats])
         mean = (data * weights.reshape((-1, 1))).sum(axis=0)
-        ax.plot(range(0, 31), mean, color='C2', label = "Simulation mean")
+        ax.plot(range(0, 31), mean, color='C2', label="Simulation mean")
 
     return plot_dead_data, plot_dead_mean
 
@@ -463,9 +464,11 @@ def _(np, osecir):
 @app.cell
 def _(history, observation_data, plot_dead_data, plot_dead_mean, plt, pyabc):
     fig_dead, ax_dead = plt.subplots()
-    ax_dead = pyabc.visualization.plot_data_callback(history, plot_dead_data, plot_dead_mean, ax=ax_dead)
+    ax_dead = pyabc.visualization.plot_data_callback(
+        history, plot_dead_data, plot_dead_mean, ax=ax_dead)
 
-    plt.scatter(range(0, 31), observation_data["Deaths"], color = "C1", label = "Data", zorder = 2)
+    plt.scatter(
+        range(0, 31), observation_data["Deaths"], color="C1", label="Data", zorder=2)
     plt.xlabel("Time")
     plt.ylabel("# Cases")
     plt.title("Cumulative number of dead patients")
@@ -496,41 +499,47 @@ def get_params(dataframerow):
 def _(run_simulation):
     def run_simulation_with_params(df):
         params = get_params(df)
-        return run_simulation(params, tmax= 60)
+        return run_simulation(params, tmax=60)
 
     return (run_simulation_with_params,)
 
 
 @app.cell
 def _(df, run_simulation_with_params):
-    predictions = df.apply(run_simulation_with_params, axis = 1)
+    predictions = df.apply(run_simulation_with_params, axis=1)
     return (predictions,)
 
 
 @app.cell
 def _(np, observation_data, osecir, plt, predictions, w):
-    fig_prog, ax_prog = plt.subplots(1, 2, figsize = (12,4))
-    ax_prog[0].scatter(range(0, 31), observation_data["Deaths"], color = "C1", label = "Data")
+    fig_prog, ax_prog = plt.subplots(1, 2, figsize=(12, 4))
+    ax_prog[0].scatter(
+        range(0, 31), observation_data["Deaths"], color="C1", label="Data")
     for prediction in predictions:
-        ax_prog[0].plot(range(61), prediction["data"][1+int(osecir.InfectionState.Dead)], color = "grey", alpha = 0.2)
+        ax_prog[0].plot(range(61), prediction["data"]
+                        [1+int(osecir.InfectionState.Dead)], color="grey", alpha=0.2)
     weights = np.array(w)
     weights /= weights.sum()
-    data = np.array([prediction['data'][1+ int(osecir.InfectionState.Dead), :] for prediction in predictions])
+    data = np.array([prediction['data'][1 + int(osecir.InfectionState.Dead), :]
+                    for prediction in predictions])
     mean = (data * weights.reshape((-1, 1))).sum(axis=0)
-    ax_prog[0].plot(range(0, 61), mean, color='C2', label = "Simulation mean")
+    ax_prog[0].plot(range(0, 61), mean, color='C2', label="Simulation mean")
     ax_prog[0].legend()
     ax_prog[0].set_title("Number of Deaths")
     ax_prog[0].set_ylabel("Number")
     ax_prog[0].set_xlabel("Time [d]")
 
-    ax_prog[1].scatter(range(0, 31), observation_data["Critical"], color = "C1", label = "Data")
+    ax_prog[1].scatter(
+        range(0, 31), observation_data["Critical"], color="C1", label="Data")
     for prediction in predictions:
-        ax_prog[1].plot(range(61), prediction["data"][1+int(osecir.InfectionState.InfectedCritical)], color = "grey", alpha = 0.2)
+        ax_prog[1].plot(range(61), prediction["data"]
+                        [1+int(osecir.InfectionState.InfectedCritical)], color="grey", alpha=0.2)
     weights = np.array(w)
     weights /= weights.sum()
-    data = np.array([prediction['data'][1+ int(osecir.InfectionState.InfectedCritical), :] for prediction in predictions])
+    data = np.array([prediction['data'][1 + int(osecir.InfectionState.InfectedCritical), :]
+                    for prediction in predictions])
     mean = (data * weights.reshape((-1, 1))).sum(axis=0)
-    ax_prog[1].plot(range(0, 61), mean, color='C2', label = "Simulation mean")
+    ax_prog[1].plot(range(0, 61), mean, color='C2', label="Simulation mean")
     ax_prog[1].legend()
     ax_prog[1].set_title("Number of ICU cases")
     ax_prog[1].set_ylabel("Number")

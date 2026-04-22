@@ -1,7 +1,9 @@
 memilio-simulation
-marimo
+marimo<0.21
 matplotlib
 pandas
 numpy
 pyabc
 pyarrow
+bayesflow
+tensorflow
