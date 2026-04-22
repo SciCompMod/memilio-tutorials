@@ -33,8 +33,6 @@ jobs:
       - name: Install memilio-simulation and Python packages
         run: |
           uv init
-          # Install memilio-simulation from the cloned repo (C++ extension, needs cmake/ninja)
-          uv add --dev ./memilio/pycode/memilio-simulation
           # Install tutorial dependencies
           uv add -r requirements.txt -c requirements.txt
 
