@@ -119,11 +119,10 @@ int main()
 
     // *** Setting Up the Model with Dynamic NPIs ***
     // We create a new model and set the two dynamic NPIs. The simulator will automatically select the
-    // highest exceeded threshold at each check interval.
+    // highest exceeded threshold.
     auto model_dynamic = create_model();
     auto& dyn_npis     = model_dynamic.parameters.get<mio::osecir::DynamicNPIsInfectedSymptoms<ScalarType>>();
 
-    dyn_npis.set_interval(mio::SimulationTime<ScalarType>(3.0)); // check every 3 days
     dyn_npis.set_duration(mio::SimulationTime<ScalarType>(14.0)); // NPIs stay active for at least 14 days
     dyn_npis.set_base_value(100000.0); // normalize to per-100k incidence
 
@@ -133,8 +132,7 @@ int main()
 
     // *** Simulation with Dynamic NPIs ***
     // To use the dynamic NPI checking, we must use the specific osecir::Simulation directly. The Simulation class
-    // overrides advance() and includes a check for dynamic NPIs in regular intervals. We create the
-    // simulation object and advance it to tmax.
+    // overrides advance(). We create the simulation object and advance it to tmax.
     mio::osecir::Simulation<ScalarType> sim(model_dynamic, t0, dt);
     sim.advance(tmax);
     auto result_dynamic = sim.get_result();
@@ -158,8 +156,8 @@ int main()
     // In this tutorial, we introduced dynamic NPIs: contact reductions which are triggered automatically
     // when an incidence threshold is exceeded. Key takeaways:
     //   - Dynamic NPIs are configured via model.parameters.get<DynamicNPIsInfectedSymptoms<FP>>().
-    //   - Three control parameters determine the mechanism: interval (check frequency), duration (minimum
-    //     active time), and base_value (reference population).
+    //   - Two control parameters determine the mechanism: duration (minimum active time),
+    //     and base_value (reference population).
     //   - Each threshold is paired with a vector of DampingSampling objects that specify which location
     //     and how much to damp.
     //   - If multiple thresholds are defined, MEmilio automatically selects the highest exceeded threshold

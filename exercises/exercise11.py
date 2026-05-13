@@ -31,7 +31,6 @@ def _(mo):
     | `threshold`   | Incidence limit that triggers the NPI        |
     | `base_value`  | Reference population size for the incidence calculation (typically 100,000)      |
     | `duration`    | Minimum number of days the NPI stays active once triggered                       |
-    | `interval`    | How often (in days) the incidence is re-evaluated                                |
     """)
     return
 
@@ -152,7 +151,7 @@ def _(mo):
     mo.md(r"""
     ## Defining Dynamic NPIs
 
-    Dynamic NPIs are attached to the model via `model.parameters.DynamicNPIsInfectedSymptoms`. The simulator checks every `interval` days whether the current number of `InfectedSymptoms` relative to `base_value` exceeds a threshold. If so, the corresponding set of `DampingSampling` objects is applied for `duration` days.
+    Dynamic NPIs are attached to the model via `model.parameters.DynamicNPIsInfectedSymptoms`. The simulator checks whether the current number of `InfectedSymptoms` relative to `base_value` exceeds a threshold. If so, the corresponding set of `DampingSampling` objects is applied for `duration` days.
 
     Each `DampingSampling` describes one location-specific contact reduction and is constructed as:
 
@@ -212,8 +211,7 @@ def _(mo):
     mo.md(r"""
     ## Setting Up the Model with Dynamic NPIs
 
-    We create a new model and set the two dynamic NPIs. The simulator will automatically select the **highest exceeded threshold** at each check interval:
-    """)
+    We create a new model and set the two dynamic NPIs. The simulator will automatically select the **highest exceeded threshold**.""")
     return
 
 
@@ -223,12 +221,11 @@ def _(create_model, mild_npis, strict_npis):
 
     dynamic_npis = model_dynamic.parameters.DynamicNPIsInfectedSymptoms
     # EXERCISE: Configure the dynamic NPI mechanism and register both thresholds.
-    #   interval   = 3       (how often the incidence is checked, in days)
     #   duration   = 14      (minimum time an NPI stays active once triggered, in days)
     #   base_value = 100000  (reference population for the incidence calculation)
     #   threshold 1:  500 per 100k -> mild_npis
     #   threshold 2: 5000 per 100k -> strict_npis
-    # Hint: use dynamic_npis.interval / .duration / .base_value / .set_threshold(threshold, npis_list)
+    # Hint: use dynamic_npis.duration / .base_value / .set_threshold(threshold, npis_list)
     # ???
     return (model_dynamic,)
 
@@ -256,7 +253,7 @@ def _(mo):
     mo.md(r"""
     ## Visualization of Model Output
 
-    We compare the `InfectedSymptoms` trajectories from the baseline and the dynamic-NPI scenario. The shaded horizontal bands mark the two thresholds:
+    We compare the `InfectedSymptoms` and `Exposed` trajectories from the baseline and the dynamic-NPI scenario. The horizontal lines in the first plot mark the two thresholds:
     """)
     return
 
@@ -267,24 +264,38 @@ def _(osecir, plt, result_baseline, result_dynamic, total_population):
     arr_dynamic  = result_dynamic.as_ndarray()
 
     inf_idx = 1 + int(osecir.InfectionState.InfectedSymptoms)
+    exp_idx = 1 + int(osecir.InfectionState.Exposed)
 
     # Convert absolute numbers to incidence per 100k for the y-axis
     scale = 100000 / total_population
 
-    fig, ax = plt.subplots()
-    ax.plot(arr_baseline[0], arr_baseline[inf_idx] * scale,
-            label='Without NPIs', color='tab:blue')
-    ax.plot(arr_dynamic[0],  arr_dynamic[inf_idx] * scale,
-            label='With dynamic NPIs', linestyle='--', color='tab:orange')
+    fig, (ax_inf, ax_exp) = plt.subplots(1, 2, figsize=(12, 4), sharex=True)
+    ax_inf.plot(arr_baseline[0], arr_baseline[inf_idx] * scale,
+                label='Without NPIs', color='tab:blue')
+    ax_inf.plot(arr_dynamic[0],  arr_dynamic[inf_idx] * scale,
+                label='With dynamic NPIs', linestyle='--', color='tab:orange')
 
     # Mark the two thresholds
-    ax.axhline(y=500,  color='gold',   linestyle=':', linewidth=1.5, label='Mild threshold (500 / 100k)')
-    ax.axhline(y=5000, color='tab:red', linestyle=':', linewidth=1.5, label='Strict threshold (5000 / 100k)')
+    ax_inf.axhline(y=500,  color='gold',   linestyle=':', linewidth=1.5, label='Mild threshold (500 / 100k)')
+    ax_inf.axhline(y=5000, color='tab:red', linestyle=':', linewidth=1.5, label='Strict threshold (5000 / 100k)')
 
-    ax.set_xlabel('Time [days]')
-    ax.set_ylabel('InfectedSymptoms')
-    ax.set_title('Dynamic NPIs: Automatic Threshold-based Interventions')
-    ax.legend()
+    ax_exp.plot(arr_baseline[0], arr_baseline[exp_idx] * scale,
+                label='Without NPIs', color='tab:blue')
+    ax_exp.plot(arr_dynamic[0],  arr_dynamic[exp_idx] * scale,
+                label='With dynamic NPIs', linestyle='--', color='tab:orange')
+
+    ax_inf.set_xlabel('Time [days]')
+    ax_inf.set_ylabel('InfectedSymptoms / 100k')
+    ax_inf.set_title('InfectedSymptoms')
+    ax_inf.legend()
+
+    ax_exp.set_xlabel('Time [days]')
+    ax_exp.set_ylabel('Exposed / 100k')
+    ax_exp.set_title('Exposed')
+    ax_exp.legend()
+
+    fig.suptitle('Dynamic NPIs: Automatic Threshold-based Interventions')
+    fig.tight_layout()
     plt.show()
     return
 
@@ -297,7 +308,7 @@ def _(mo):
     In this tutorial, we introduced **dynamic NPIs** contact reductions which are triggered automatically when an incidence threshold is exceeded. Key takeaways:
 
     - Dynamic NPIs are configured via `model.parameters.DynamicNPIsInfectedSymptoms`.
-    - Three control parameters determine the mechanism: `interval` (check frequency), `duration` (minimum active time), and `base_value` (reference population).
+    - Two control parameters determine the mechanism: `duration` (minimum active time), and `base_value` (reference population).
     - Each threshold is paired with a list of `DampingSampling` objects that specify **which location** and **how much** to damp.
     - If multiple thresholds are defined, MEmilio automatically selects the highest exceeded threshold at each check.
     - Dynamic NPIs require using `osecir.Simulation(model, t0, dt)` and `sim.advance(tmax)`, since the threshold check is embedded in `advance()`.
