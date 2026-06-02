@@ -15,7 +15,7 @@ source venv/bin/activate
 python -m pip install marimo
 ```
 
-Note that on Windows, you need to use `source .\venv\Scripts\activate` instead.
+Note that on Windows, you need to use `.\venv\Scripts\Activate.ps1` instead.
 
 The notebook can then be started by running `marimo edit` (within the venv we just created and activated).
 This should open a new browser window with the notebook. Otherwise, look for and open the link with `http://localhost:2718` from marimo's output.
