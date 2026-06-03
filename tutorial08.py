@@ -203,17 +203,16 @@ def _(num_age_groups, oseir_metapop, plt, result_interpolated):
     # Convert time series to array
     region_offset = (
         int(oseir_metapop.InfectionState.Recovered) + 1) * num_age_groups
-    result_array_0 = result_interpolated.as_ndarray()[:region_offset, :]
-    result_array_1 = result_interpolated.as_ndarray(
-    )[region_offset:2 * region_offset, :]
+    result_array_0 = result_interpolated.as_ndarray()[1:region_offset+1, :]
+    result_array_1 = result_interpolated.as_ndarray()[1+region_offset:2 * region_offset+2, :]
 
     # Plot the number of non-symptomatically infected for both regions
     fig, ax = plt.subplots()
-    time = result_array_0[0, :]
-    Infected_0 = result_array_0[1 + int(oseir_metapop.InfectionState.Infected), :] + result_array_0[1 + int(oseir_metapop.InfectionState.Infected) + int(
-        oseir_metapop.InfectionState.Recovered) + 1, :] + result_array_0[1 + int(oseir_metapop.InfectionState.Infected) + 2 * (int(oseir_metapop.InfectionState.Recovered) + 1), :]
-    Infected_1 = result_array_1[1 + int(oseir_metapop.InfectionState.Infected), :] + result_array_1[1 + int(oseir_metapop.InfectionState.Infected) + int(
-        oseir_metapop.InfectionState.Recovered) + 1, :] + result_array_1[1 + int(oseir_metapop.InfectionState.Infected) + 2 * (int(oseir_metapop.InfectionState.Recovered) + 1), :]
+    time = result_interpolated.as_ndarray()[0, :]
+    Infected_0 = result_array_0[int(oseir_metapop.InfectionState.Infected), :] + result_array_0[int(oseir_metapop.InfectionState.Infected) + int(
+        oseir_metapop.InfectionState.Recovered) + 1, :] + result_array_0[int(oseir_metapop.InfectionState.Infected) + 2 * (int(oseir_metapop.InfectionState.Recovered) + 1), :]
+    Infected_1 = result_array_1[int(oseir_metapop.InfectionState.Infected), :] + result_array_1[int(oseir_metapop.InfectionState.Infected) + int(
+        oseir_metapop.InfectionState.Recovered) + 1, :] + result_array_1[int(oseir_metapop.InfectionState.Infected) + 2 * (int(oseir_metapop.InfectionState.Recovered) + 1), :]
     ax.plot(time, Infected_0, label='Infected Region 1')
     ax.plot(time, Infected_1, label='Infected Region 2')
     ax.set_xlabel('Time [days]')
