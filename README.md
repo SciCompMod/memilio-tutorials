@@ -6,6 +6,10 @@ The official documentation can be found here https://memilio.readthedocs.io .
 
 ### Marimo notebook setup
 
+We recommend using the editor VSCode and installing the Python and Marimo extensions. Only this this set up was 
+tested by us. If you encounter any issues with the installation process, please open an issue on our 
+`GitHub <https://github.com/SciCompMod/memilio/issues>`__ page.
+
 First, open a new terminal.
 Go to a directory for the new project, then create a virtual environment (here "venv") and install marimo:
 

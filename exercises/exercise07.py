@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.20.4"
+__generated_with = "0.24.0"
 app = marimo.App(width="medium")
 
 
@@ -251,7 +251,8 @@ def _(mo):
     ### Exercise
 
     Set the mobility coefficients for `Dead` individuals to zero:
-    Hint: For the first age group this can be done via `mobility_coefficients[0 * int(osecir.InfectionState.Dead) + osecir.InfectionState.Dead] = 0`.
+
+    Hint: For the first age group this can be done via `mobility_coefficients[0 * (int(osecir.InfectionState.Dead)+1) + int(osecir.InfectionState.Dead)] = 0`.
     """)
     return
 

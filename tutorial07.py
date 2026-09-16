@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.19.11"
+__generated_with = "0.24.0"
 app = marimo.App(width="medium")
 
 
@@ -104,20 +104,20 @@ def _(mo):
 
 @app.cell
 def _(AgeGroup, model, np, num_age_groups):
-    for ag in range(num_age_groups):
+    for i in range(num_age_groups):
         # Set infection state stay times (in days)
-        model.parameters.TimeExposed[AgeGroup(ag)] = 3.2
-        model.parameters.TimeInfectedNoSymptoms[AgeGroup(ag)] = 2.
-        model.parameters.TimeInfectedSymptoms[AgeGroup(ag)] = 6.
-        model.parameters.TimeInfectedSevere[AgeGroup(ag)] = 12.
-        model.parameters.TimeInfectedCritical[AgeGroup(ag)] = 8.
+        model.parameters.TimeExposed[AgeGroup(i)] = 3.2
+        model.parameters.TimeInfectedNoSymptoms[AgeGroup(i)] = 2.
+        model.parameters.TimeInfectedSymptoms[AgeGroup(i)] = 6.
+        model.parameters.TimeInfectedSevere[AgeGroup(i)] = 12.
+        model.parameters.TimeInfectedCritical[AgeGroup(i)] = 8.
 
         # Set infection state transition probabilities
-        model.parameters.RelativeTransmissionNoSymptoms[AgeGroup(ag)] = 0.67
-        model.parameters.TransmissionProbabilityOnContact[AgeGroup(ag)] = 0.1
-        model.parameters.RecoveredPerInfectedNoSymptoms[AgeGroup(ag)] = 0.2
-        model.parameters.RiskOfInfectionFromSymptomatic[AgeGroup(ag)] = 0.25
-        model.parameters.DeathsPerCritical[AgeGroup(ag)] = 0.3
+        model.parameters.RelativeTransmissionNoSymptoms[AgeGroup(i)] = 0.67
+        model.parameters.TransmissionProbabilityOnContact[AgeGroup(i)] = 0.1
+        model.parameters.RecoveredPerInfectedNoSymptoms[AgeGroup(i)] = 0.2
+        model.parameters.RiskOfInfectionFromSymptomatic[AgeGroup(i)] = 0.25
+        model.parameters.DeathsPerCritical[AgeGroup(i)] = 0.3
 
     # The groups have an increasing risk of severe and critical infections
     model.parameters.SeverePerInfectedSymptoms[AgeGroup(0)] = 0.2
@@ -128,7 +128,8 @@ def _(AgeGroup, model, np, num_age_groups):
     model.parameters.CriticalPerSevere[AgeGroup(2)] = 0.25 * 2
 
     # Set contact frequency
-    model.parameters.ContactPatterns.cont_freq_mat[0].baseline = np.ones((num_age_groups, num_age_groups)) * 10
+    model.parameters.ContactPatterns.cont_freq_mat[0].baseline = np.ones(
+        (num_age_groups, num_age_groups)) * 10
     return
 
 
@@ -159,13 +160,15 @@ def _(mo):
 @app.cell
 def _(AgeGroup, model, num_age_groups, osecir, total_population_per_region):
     # The population is equally distributed among the age groups
-    for group in range(num_age_groups):
+    for j in range(num_age_groups):
         # 1% of the population is initially infected, 0.5% Exposed and 0.5% in the pre- or asymptomatic state
-        model.populations[AgeGroup(group), osecir.InfectionState.Exposed] = 0.005 * total_population_per_region / num_age_groups
-        model.populations[AgeGroup(group), osecir.InfectionState.InfectedNoSymptoms] = 0.005 * total_population_per_region / num_age_groups
+        model.populations[AgeGroup(j), osecir.InfectionState.Exposed] = 0.005 * \
+            total_population_per_region / num_age_groups
+        model.populations[AgeGroup(j), osecir.InfectionState.InfectedNoSymptoms] = 0.005 * \
+            total_population_per_region / num_age_groups
         # The rest of the population is Susceptible
         model.populations.set_difference_from_group_total_AgeGroup(
-            (AgeGroup(group), osecir.InfectionState.Susceptible), total_population_per_region / num_age_groups)
+            (AgeGroup(j), osecir.InfectionState.Susceptible), total_population_per_region / num_age_groups)
     return
 
 
@@ -180,7 +183,7 @@ def _(mo):
 @app.cell
 def _(graph, model, t0):
     # Add node with id 0 and copy beforehand initialized model to it
-    graph.add_node(id=0, model=model, t0=t0) 
+    graph.add_node(id=0, model=model, t0=t0)
     return
 
 
@@ -195,13 +198,14 @@ def _(mo):
 @app.cell
 def _(AgeGroup, model, num_age_groups, osecir, total_population_per_region):
     # The population is equally distributed among the age groups
-    for age in range(num_age_groups):
+    for k in range(num_age_groups):
         # No infected individuals
-        model.populations[AgeGroup(age), osecir.InfectionState.Exposed] = 0
-        model.populations[AgeGroup(age), osecir.InfectionState.InfectedNoSymptoms] = 0
+        model.populations[AgeGroup(k), osecir.InfectionState.Exposed] = 0
+        model.populations[AgeGroup(
+            k), osecir.InfectionState.InfectedNoSymptoms] = 0
         # The total population is Susceptible
         model.populations.set_difference_from_group_total_AgeGroup(
-            (AgeGroup(age), osecir.InfectionState.Susceptible), total_population_per_region / num_age_groups)
+            (AgeGroup(k), osecir.InfectionState.Susceptible), total_population_per_region / num_age_groups)
     return
 
 
@@ -216,7 +220,7 @@ def _(mo):
 @app.cell
 def _(graph, model, t0):
     # Add node with id 0 and copy beforehand initialized model to it
-    graph.add_node(id=1, model=model, t0=t0) 
+    graph.add_node(id=1, model=model, t0=t0)
     return
 
 
@@ -231,32 +235,35 @@ def _(mo):
 
 
 @app.cell
-def _(graph, mio, model, np, osecir):
+def _(graph, mio, model, np, num_age_groups, osecir):
     # One coefficient per (age group x compartment)
     mobility_coefficients = 0.1 * np.ones(model.populations.numel())
     # Dead individuals do not commute
-    mobility_coefficients[osecir.InfectionState.Dead] = 0
+    for l in range(num_age_groups):
+        mobility_coefficients[l * (int(osecir.InfectionState.Dead)+1) +
+                              int(osecir.InfectionState.Dead)] = 0
+    # mobility_coefficients[osecir.InfectionState.Dead] = 0
     mobility_params = mio.MobilityParameters(mobility_coefficients)
     # Add two edges to graph
     graph.add_edge(0, 1, mobility_params)
     graph.add_edge(1, 0, mobility_params)
     # Individuals are exchanged every half day
     dt_exchange = 0.5
-    return
+    return (dt_exchange,)
 
 
 @app.cell
 def _(mo):
     mo.md(r"""
     ## Model simulation
-    
+
     We now have finished initializing the metapopulation model. The graph-based simulation is created and advanced until `tmax` via:
     """)
     return
 
 
 @app.cell
-def _(graph, osecir, t0, tmax):
+def _(dt_exchange, graph, osecir, t0, tmax):
     # Create graph simulation and advance until tmax
     sim = osecir.MobilitySimulation(graph, t0, dt=dt_exchange)
     sim.advance(tmax)
@@ -288,8 +295,10 @@ def _(mo):
 
 @app.cell
 def _(osecir, result_region0, result_region1):
-    result_region0_interpolated = osecir.interpolate_simulation_result(result_region0)
-    result_region1_interpolated = osecir.interpolate_simulation_result(result_region1)
+    result_region0_interpolated = osecir.interpolate_simulation_result(
+        result_region0)
+    result_region1_interpolated = osecir.interpolate_simulation_result(
+        result_region1)
     return result_region0_interpolated, result_region1_interpolated
 
 
@@ -297,7 +306,7 @@ def _(osecir, result_region0, result_region1):
 def _(mo):
     mo.md(r"""
     ## Visualization of model output
-        
+
     Finally, we can compare the trajectories of all infection states for both regions. In the following, we plot the number of `InfectedNoSymptoms` aggregated over all age groups for both regions:
     """)
     return
@@ -312,8 +321,10 @@ def _(osecir, plt, result_region0_interpolated, result_region1_interpolated):
     # Plot the number of non-symptomatically infected for both regions
     fig, ax = plt.subplots()
     time = result_array_0[0, :]
-    InfectedNoSymptoms_0 = result_array_0[1 + int(osecir.InfectionState.InfectedNoSymptoms), :] + result_array_0[1 + int(osecir.InfectionState.InfectedNoSymptoms) + int(osecir.InfectionState.Dead) + 1, :] + result_array_0[1 + int(osecir.InfectionState.InfectedNoSymptoms) + 2 * (int(osecir.InfectionState.Dead) + 1), :]
-    InfectedNoSymptoms_1 = result_array_1[1 + int(osecir.InfectionState.InfectedNoSymptoms), :] + result_array_1[1 + int(osecir.InfectionState.InfectedNoSymptoms) + int(osecir.InfectionState.Dead) + 1, :] + result_array_1[1 + int(osecir.InfectionState.InfectedNoSymptoms) + 2 * (int(osecir.InfectionState.Dead) + 1), :]
+    InfectedNoSymptoms_0 = result_array_0[1 + int(osecir.InfectionState.InfectedNoSymptoms), :] + result_array_0[1 + int(osecir.InfectionState.InfectedNoSymptoms) + int(
+        osecir.InfectionState.Dead) + 1, :] + result_array_0[1 + int(osecir.InfectionState.InfectedNoSymptoms) + 2 * (int(osecir.InfectionState.Dead) + 1), :]
+    InfectedNoSymptoms_1 = result_array_1[1 + int(osecir.InfectionState.InfectedNoSymptoms), :] + result_array_1[1 + int(osecir.InfectionState.InfectedNoSymptoms) + int(
+        osecir.InfectionState.Dead) + 1, :] + result_array_1[1 + int(osecir.InfectionState.InfectedNoSymptoms) + 2 * (int(osecir.InfectionState.Dead) + 1), :]
     ax.plot(time, InfectedNoSymptoms_0, label='Infected No Symptoms Region 1')
     ax.plot(time, InfectedNoSymptoms_1, label='Infected No Symptoms Region 2')
     ax.set_xlabel('Time [days]')
