@@ -49,7 +49,7 @@ def _():
 @app.cell
 def _(mo):
     mo.md(r"""
-    We set the simulation start time `t0`, the end time `tmax` and the initial step size `dt` as:
+    We set the simulation start time `t0` and the end time `tmax`.:
     """)
     return
 
@@ -58,7 +58,6 @@ def _(mo):
 def _():
     t0 = 0
     tmax = 100
-    dt = 0.1
     return t0, tmax
 
 
@@ -242,7 +241,6 @@ def _(graph, mio, model, np, num_age_groups, osecir):
     for l in range(num_age_groups):
         mobility_coefficients[l * (int(osecir.InfectionState.Dead)+1) +
                               int(osecir.InfectionState.Dead)] = 0
-    # mobility_coefficients[osecir.InfectionState.Dead] = 0
     mobility_params = mio.MobilityParameters(mobility_coefficients)
     # Add two edges to graph
     graph.add_edge(0, 1, mobility_params)
@@ -264,9 +262,22 @@ def _(mo):
 
 @app.cell
 def _(dt_exchange, graph, osecir, t0, tmax):
-    # Create graph simulation and advance until tmax
-    sim = osecir.MobilitySimulation(graph, t0, dt=dt_exchange)
-    sim.advance(tmax)
+    import os
+    # Silence C++ log output; it can deadlock marimo's output pipe on Windows
+    devnull = os.open(os.devnull, os.O_WRONLY)
+    saved_stdout, saved_stderr = os.dup(1), os.dup(2)
+    os.dup2(devnull, 1)
+    os.dup2(devnull, 2)
+    try:
+        # Create graph simulation and advance until tmax
+        sim = osecir.MobilitySimulation(graph, t0, dt=dt_exchange)
+        sim.advance(tmax)
+    finally:
+        os.dup2(saved_stdout, 1)
+        os.dup2(saved_stderr, 2)
+        os.close(devnull)
+        os.close(saved_stdout)
+        os.close(saved_stderr)
     return (sim,)
 
 
