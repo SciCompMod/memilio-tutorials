@@ -57,6 +57,18 @@ int main()
     model.populations.set_difference_from_total({mio::AgeGroup(0), mio::osecir::InfectionState::Susceptible},
                                                 total_population);
     // Before running the simulation, we check if all initial values and parameters are within a valid range.
+    // MEmilio provides two related functions for this:
+    // - `check_constraints()` only checks the values. Every violated constraint is
+    // reported in the log, but nothing is changed. You have to fix the values yourself
+    // before simulating.
+    // - `apply_constraints()` checks and directly corrects the values (e.g., a
+    // negative compartment value is set to zero, a stay time that is too small
+    // is set to a minimal admissible value). Every correction is logged as a
+    // warning with the old and new value. Returns `True` if anything was
+    // corrected.
+    // Use `check_constraints()` when you need the simulation to use exactly the
+    // values you set. Use `apply_constraints()` when automatic correction to the
+    // closest valid values is acceptable.
     model.check_constraints();
 
     // *** Simulate flows. ***
