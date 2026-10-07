@@ -6,7 +6,7 @@ The official documentation can be found here https://memilio.readthedocs.io .
 
 ### Marimo notebook setup
 
-We recommend using the editor VSCode and installing the Python and Marimo extensions. Only this this set up was 
+We recommend using the editor VSCode and installing the Python and Marimo extensions. Only this setup was 
 tested by us. If you encounter any issues with the installation process, please open an issue on our 
 [GitHub](https://github.com/SciCompMod/memilio/issues) page.
 

@@ -324,12 +324,6 @@ def _(dt_exchange, graph, osecir, t0, tmax):
 
 
 @app.cell
-def _():
-    # Insert code here
-    return
-
-
-@app.cell
 def _(mo):
     mo.md(r"""
     As every graph node has its own model, we get one result time series per node. Those can be accessed as follows:
