@@ -211,8 +211,8 @@ def _(osecir, plt, result):
     for t_damping, label in [(10, 'school + office closure'), (25, 'mask mandate'),
                               (40, 'full homeschooling')]:
         ax.axvline(t_damping, color='gray', linestyle='--', linewidth=0.8)
-        ax.text(t_damping, ax.get_ylim()[1] * 0.95, label, rotation=90,
-                verticalalignment='top', fontsize=8, color='gray')
+        ax.text(t_damping, 1.01, label, rotation=45, ha='left', va='bottom',
+                fontsize=8, color='gray', transform=ax.get_xaxis_transform())
 
     ax.set_xlabel('Time [days]')
     ax.set_ylabel('Individuals [#]')
